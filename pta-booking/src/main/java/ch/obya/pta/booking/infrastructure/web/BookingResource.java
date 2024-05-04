@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.web;
+package ch.obya.pta.booking.infrastructure.web;
 
 /*-
  * #%L
@@ -36,7 +36,6 @@ import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import org.jboss.resteasy.reactive.ResponseStatus;
-import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
@@ -44,7 +43,6 @@ import org.zalando.problem.Status;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Path("/sessions")
 @Produces("application/problem+json")

@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.data;
+package ch.obya.pta.booking.infrastructure.data;
 
 /*-
  * #%L

@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.external.shopping;
+package ch.obya.pta.booking.infrastructure.external.clients;
 
 /*-
  * #%L
@@ -23,20 +23,21 @@ package ch.obya.pta.booking.external.shopping;
  * #L%
  */
 
-import ch.obya.pta.booking.application.ArticleStore;
-import ch.obya.pta.booking.domain.ArticleId;
+import ch.obya.pta.booking.application.ClientProfile;
+import ch.obya.pta.booking.domain.ParticipantId;
+import ch.obya.pta.booking.domain.Subscription;
 import io.quarkus.arc.Unremovable;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Unremovable
 @ApplicationScoped
-public class DefaultArticleStore implements ArticleStore {
+public class DefaultClientProfile implements ClientProfile {
     @Override
-    public Uni<List<ArticleId>> selectMatchingSubscriptions(Set<ArticleId> subscriptions, ArticleId articleId) {
+    public Uni<List<Subscription>> getSubscriptions(ParticipantId participant, LocalDate validAt) {
         return null;
     }
 }

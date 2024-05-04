@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.web;
+package ch.obya.pta.booking.infrastructure.web;
 
 /*-
  * #%L
@@ -24,7 +24,6 @@ package ch.obya.pta.booking.web;
  */
 
 import ch.obya.pta.booking.domain.ParticipantId;
-import ch.obya.pta.booking.domain.SessionId;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
 import jakarta.ws.rs.ext.Provider;

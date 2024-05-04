@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.web;
+package ch.obya.pta.booking.infrastructure.messaging;
 
 /*-
  * #%L
@@ -23,13 +23,19 @@ package ch.obya.pta.booking.web;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.Session;
+import ch.obya.pta.booking.application.EventPublisher;
+import ch.obya.pta.booking.domain.DomainEvent;
+import io.quarkus.arc.Unremovable;
+import io.smallrye.mutiny.Uni;
+import jakarta.enterprise.context.ApplicationScoped;
 
-import java.util.UUID;
+import java.util.Collection;
 
-public record SessionDto(UUID id) {
-
-    public static SessionDto from(Session session) {
-        return new SessionDto(session.id().id());
+@Unremovable
+@ApplicationScoped
+public class OutboxPatternEventPersister implements EventPublisher {
+    @Override
+    public Uni<Void> send(Collection<DomainEvent> events) {
+        return null;
     }
 }
