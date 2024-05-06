@@ -112,6 +112,7 @@ public class Session {
                         new SubscriptionCharged(subscription, participant));
             } else {
                 booking = Booking.prebooked(id, participant, subscription);
+                andThen(new SessionPrebooked(this.id, participant));
             }
         }
         bookings.add(booking);

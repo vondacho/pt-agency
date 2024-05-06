@@ -45,11 +45,11 @@ public class SessionTest {
 
         assertThat(session.bookings()).hasSize(1);
         assertThat(session.bookings()).allMatch(it -> Booking.Status.PREBOOKED == it.status() && it.id().participant().equals(participant1));
-        assertThat(session.domainEvents()).isEmpty();
+        assertThat(session.domainEvents()).containsOnly(new SessionPrebooked(session.id(), participant1));
         assertThat(booking.id().session()).isEqualTo(session.id());
         assertThat(booking.id().participant()).isEqualTo(participant1);
         assertThat(booking.subscription()).isEqualTo(subscription);
-
+        assertThat(session.domainEvents()).isEmpty();
         assertThat(session.findBooking(participant1)).isPresent();
 
         var participant2 = participantTest();
@@ -58,8 +58,7 @@ public class SessionTest {
         assertThat(session.bookings()).hasSize(2);
         assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant1));
         assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant2));
-        var events = List.copyOf(session.domainEvents());
-        assertThat(events).containsOnly(
+        assertThat(session.domainEvents()).containsOnly(
                 new SessionBooked(session.id(), participant1),
                 new SessionBooked(session.id(), participant2),
                 new SubscriptionCharged(subscription, participant1),
@@ -67,6 +66,7 @@ public class SessionTest {
         assertThat(booking.id().session()).isEqualTo(session.id());
         assertThat(booking.id().participant()).isEqualTo(participant2);
         assertThat(booking.subscription()).isEqualTo(subscription);
+        assertThat(session.domainEvents()).isEmpty();
 
         var participant3 = participantTest();
         booking = session.book(participant3, subscription);
@@ -75,23 +75,23 @@ public class SessionTest {
         assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant1));
         assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant2));
         assertThat(session.bookings()).anyMatch(it -> Booking.Status.WAITING_LIST == it.status() && it.id().participant().equals(participant3));
-        events = List.copyOf(session.domainEvents());
-        assertThat(events).containsOnly(new ParticipantWaitlisted(session.id(), participant3));
+        assertThat(session.domainEvents()).containsOnly(new ParticipantWaitlisted(session.id(), participant3));
         assertThat(booking.id().session()).isEqualTo(session.id());
         assertThat(booking.id().participant()).isEqualTo(participant3);
         assertThat(booking.subscription()).isEqualTo(subscription);
+        assertThat(session.domainEvents()).isEmpty();
 
         session.cancel(participant1);
 
         assertThat(session.bookings()).hasSize(2);
         assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant2));
         assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant3));
-        events = List.copyOf(session.domainEvents());
-        assertThat(events).containsOnly(
+        assertThat(session.domainEvents()).containsOnly(
                 new SessionBooked(session.id(), participant3),
                 new SubscriptionCharged(subscription, participant3),
                 new BookingCancelled(session.id(), participant1),
                 new SubscriptionCredited(subscription, participant1));
+        assertThat(session.domainEvents()).isEmpty();
     }
 
     private Session sessionTest(int min, int max) {
