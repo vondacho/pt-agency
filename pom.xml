@@ -27,6 +27,14 @@
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/vondacho/pt-agency</url>
+        </repository>
+    </distributionManagement>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
