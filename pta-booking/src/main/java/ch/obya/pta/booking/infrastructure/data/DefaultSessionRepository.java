@@ -23,8 +23,10 @@ package ch.obya.pta.booking.infrastructure.data;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.*;
-import io.quarkus.arc.Unremovable;
+import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.repository.SessionRepository;
+import ch.obya.pta.booking.domain.vo.*;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -36,7 +38,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Unremovable
 @ApplicationScoped
 public class DefaultSessionRepository implements SessionRepository {
     @Override
@@ -71,22 +72,19 @@ public class DefaultSessionRepository implements SessionRepository {
     }
 
     private Session sessionMock(BookingId id) {
-        var sessionId = new SessionId(UUID.randomUUID());
+        var sessionId = SessionId.create();
         return new Session(
-                new SessionId(UUID.randomUUID()),
-                new ArticleId(UUID.randomUUID()),
+                sessionId,
+                ArticleId.create(),
                 "test",
                 new Session.TimeSlot(LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), Duration.ofHours(1)),
                 new Location("one room"),
                 new Quota(3, 25),
-                new HashSet<>(Set.of(prebookingMock(sessionId, id))));
+                new HashSet<>(Set.of(prebookingMock(id))));
     }
 
-    private Booking prebookingMock(SessionId sessionId, BookingId id) {
-        return new Booking(
-                new BookingId(sessionId, new ParticipantId(UUID.randomUUID())),
-                new SubscriptionId(UUID.randomUUID()),
-                Booking.Status.WAITING_LIST);
+    private Booking prebookingMock(BookingId id) {
+        return Booking.waiting(id.session(), id.participant(), SubscriptionId.create());
     }
 
     private Session sessionMock() {

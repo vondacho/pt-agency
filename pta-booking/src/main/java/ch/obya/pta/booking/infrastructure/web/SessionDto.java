@@ -23,7 +23,7 @@ package ch.obya.pta.booking.infrastructure.web;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.Session;
+import ch.obya.pta.booking.domain.aggregate.Session;
 
 import java.util.UUID;
 

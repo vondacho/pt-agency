@@ -21,7 +21,7 @@ paths:
   /sessions:
     get:
       tags:
-      - Booking Resource
+      - Session Resource
       parameters:
       - name: from
         in: query
@@ -40,32 +40,10 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SessionDto"
-  /sessions/bookings:
-    get:
-      tags:
-      - Booking Resource
-      parameters:
-      - name: from
-        in: query
-        schema:
-          $ref: "#/components/schemas/LocalDate"
-      - name: to
-        in: query
-        schema:
-          $ref: "#/components/schemas/LocalDate"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/problem+json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BookingDto"
   /sessions/{id}:
     get:
       tags:
-      - Booking Resource
+      - Session Resource
       parameters:
       - name: id
         in: path
@@ -79,10 +57,48 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SessionDto"
+    put:
+      tags:
+      - Session Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/SessionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/SessionId"
+    post:
+      tags:
+      - Session Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/SessionId"
+    delete:
+      tags:
+      - Session Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/SessionId"
+      responses:
+        "204":
+          description: No Content
   /sessions/{id}/bookings:
     get:
       tags:
-      - Booking Resource
+      - Session Resource
       parameters:
       - name: id
         in: path
@@ -101,7 +117,7 @@ paths:
   /sessions/{id}/bookings/{participant}:
     post:
       tags:
-      - Booking Resource
+      - Session Resource
       parameters:
       - name: id
         in: path
@@ -122,7 +138,7 @@ paths:
                 $ref: "#/components/schemas/BookingId"
     delete:
       tags:
-      - Booking Resource
+      - Session Resource
       parameters:
       - name: id
         in: path

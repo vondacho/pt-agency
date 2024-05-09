@@ -23,14 +23,16 @@ package ch.obya.pta.booking.domain;
  * #L%
  */
 
+import ch.obya.pta.common.util.exception.Problem;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.experimental.FieldDefaults;
 
+@Getter
+@Accessors(fluent = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public enum BookingProblem {
+public enum BookingProblem implements Problem {
 
     NoSession("Session %s does not exist."),
     SessionQuotaReached("Session %s: no more participant allowed, the quota (%d) is reached."),
@@ -42,25 +44,7 @@ public enum BookingProblem {
     NoBooking("Booking on session %s for participant %s does not exist."),
     NoSessionForBooking("Session with booking %s does not exist."),
     QuotaInvalid("Quota (%s, %s) is not valid."),
-    WeekTimeSlotInvalid("Week time slot (%s, %s, %s, %s) is not valid.");
+    TimeSlotInvalid("Week time slot (%s, %s, %s, %s) is not valid.");
 
-    private final String template;
-
-    @Getter
-    @Accessors(fluent = true)
-    @FieldDefaults(makeFinal=true)
-    public static class Exception extends RuntimeException {
-        String code;
-        Object[] parameters;
-
-        private Exception(String code, String template, Object...parameters) {
-            super(template.formatted(parameters));
-            this.code = code;
-            this.parameters = parameters;
-        }
-    }
-
-    public Exception toException(Object...parameters) {
-        return new Exception(this.name(), template, parameters);
-    }
+    private final String text;
 }

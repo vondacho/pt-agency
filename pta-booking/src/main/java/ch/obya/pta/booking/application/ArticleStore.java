@@ -23,10 +23,9 @@ package ch.obya.pta.booking.application;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.ArticleId;
+import ch.obya.pta.booking.domain.vo.ArticleId;
 import io.smallrye.mutiny.Uni;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 

@@ -6,6 +6,12 @@
         <artifactId>pta</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <groupId>ch.obya</groupId>
     <artifactId>pta-booking</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>ch.obya</groupId>
+            <artifactId>pta-common</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

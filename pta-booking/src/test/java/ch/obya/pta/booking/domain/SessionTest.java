@@ -23,81 +23,120 @@ package ch.obya.pta.booking.domain;
  * #L%
  */
 
+import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.event.*;
+import ch.obya.pta.booking.domain.vo.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class SessionTest {
     @Test
     void sessionLifecycle() {
-        var session = sessionTest(2, 2);
+        var session = sessionTest(1, 1);
+
+        session.modify()
+                .rename("modified")
+                .relocate(new Location("modified"))
+                .reschedule(session.state().slot().toBuilder()
+                        .stop(LocalTime.of(11, 0))
+                        .duration(Duration.ofHours(2))
+                        .build())
+                .resize(new Quota(2, 2))
+                .done();
+
+        var state = session.state();
+
+        assertThat(state.title()).isEqualTo("modified");
+        assertThat(state.location().name()).isEqualTo("modified");
+        assertThat(state.slot().start()).isEqualTo(LocalTime.of(9, 0));
+        assertThat(state.slot().stop()).isEqualTo(LocalTime.of(11, 0));
+        assertThat(state.slot().duration()).isEqualTo(Duration.ofHours(2));
+        assertThat(state.quota()).isEqualTo(new Quota(2, 2));
+
         var participant1 = participantTest();
         var subscription = subscriptionTest();
 
         var booking = session.book(participant1, subscription);
 
-        assertThat(session.bookings()).hasSize(1);
-        assertThat(session.bookings()).allMatch(it -> Booking.Status.PREBOOKED == it.status() && it.id().participant().equals(participant1));
-        assertThat(session.domainEvents()).containsOnly(new SessionPrebooked(session.id(), participant1));
         assertThat(booking.id().session()).isEqualTo(session.id());
         assertThat(booking.id().participant()).isEqualTo(participant1);
         assertThat(booking.subscription()).isEqualTo(subscription);
-        assertThat(session.domainEvents()).isEmpty();
         assertThat(session.findBooking(participant1)).isPresent();
+        assertThat(session.bookings())
+                .extracting(Booking::status, it -> it.id().participant())
+                .containsExactly(tuple(Booking.Status.PREBOOKED, participant1));
+
+        assertThat(session.domainEvents())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
+                .containsExactly(new SessionPrebooked(session.id(), participant1));
+        assertThat(session.domainEvents()).isEmpty();
 
         var participant2 = participantTest();
         booking = session.book(participant2, subscription);
 
-        assertThat(session.bookings()).hasSize(2);
-        assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant1));
-        assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant2));
-        assertThat(session.domainEvents()).containsOnly(
-                new SessionBooked(session.id(), participant1),
-                new SessionBooked(session.id(), participant2),
-                new SubscriptionCharged(subscription, participant1),
-                new SubscriptionCharged(subscription, participant2));
         assertThat(booking.id().session()).isEqualTo(session.id());
         assertThat(booking.id().participant()).isEqualTo(participant2);
         assertThat(booking.subscription()).isEqualTo(subscription);
+        assertThat(session.bookings())
+                .extracting(Booking::status, it -> it.id().participant())
+                .containsExactlyInAnyOrder(
+                        tuple(Booking.Status.DONE, participant1),
+                        tuple(Booking.Status.DONE, participant2));
+        assertThat(session.domainEvents())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
+                .containsExactlyInAnyOrder(
+                    new SessionBooked(session.id(), participant1),
+                    new SessionBooked(session.id(), participant2),
+                    new SubscriptionCharged(subscription, participant1),
+                    new SubscriptionCharged(subscription, participant2));
         assertThat(session.domainEvents()).isEmpty();
 
         var participant3 = participantTest();
         booking = session.book(participant3, subscription);
 
-        assertThat(session.bookings()).hasSize(3);
-        assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant1));
-        assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant2));
-        assertThat(session.bookings()).anyMatch(it -> Booking.Status.WAITING_LIST == it.status() && it.id().participant().equals(participant3));
-        assertThat(session.domainEvents()).containsOnly(new ParticipantWaitlisted(session.id(), participant3));
         assertThat(booking.id().session()).isEqualTo(session.id());
         assertThat(booking.id().participant()).isEqualTo(participant3);
         assertThat(booking.subscription()).isEqualTo(subscription);
+        assertThat(session.bookings())
+                .extracting(Booking::status, it -> it.id().participant())
+                .containsExactlyInAnyOrder(
+                        tuple(Booking.Status.DONE, participant1),
+                        tuple(Booking.Status.DONE, participant2),
+                        tuple(Booking.Status.WAITING_LIST, participant3));
+        assertThat(session.domainEvents())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
+                .containsExactly(new ParticipantWaitlisted(session.id(), participant3));
         assertThat(session.domainEvents()).isEmpty();
 
         session.cancel(participant1);
 
-        assertThat(session.bookings()).hasSize(2);
-        assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant2));
-        assertThat(session.bookings()).anyMatch(it -> Booking.Status.DONE == it.status() && it.id().participant().equals(participant3));
-        assertThat(session.domainEvents()).containsOnly(
-                new SessionBooked(session.id(), participant3),
-                new SubscriptionCharged(subscription, participant3),
-                new BookingCancelled(session.id(), participant1),
-                new SubscriptionCredited(subscription, participant1));
+        assertThat(session.bookings())
+                .extracting(Booking::status, it -> it.id().participant())
+                .containsExactlyInAnyOrder(
+                        tuple(Booking.Status.DONE, participant2),
+                        tuple(Booking.Status.DONE, participant3));
+        assertThat(session.domainEvents())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
+                .containsExactlyInAnyOrder(
+                        new SessionBooked(session.id(), participant3),
+                        new SubscriptionCharged(subscription, participant3),
+                        new BookingCancelled(session.id(), participant1),
+                        new SubscriptionCredited(subscription, participant1));
         assertThat(session.domainEvents()).isEmpty();
     }
 
     private Session sessionTest(int min, int max) {
         return new Session(
-                new SessionId(UUID.randomUUID()),
-                new ArticleId(UUID.randomUUID()),
+                SessionId.create(),
+                ArticleId.create(),
                 "test",
                 new Session.TimeSlot(LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), Duration.ofHours(1)),
                 new Location("one room"),
@@ -106,9 +145,9 @@ public class SessionTest {
     }
 
     private ParticipantId participantTest() {
-        return new ParticipantId(UUID.randomUUID());
+        return ParticipantId.create();
     }
     private SubscriptionId subscriptionTest() {
-        return new SubscriptionId(UUID.randomUUID());
+        return SubscriptionId.create();
     }
 }

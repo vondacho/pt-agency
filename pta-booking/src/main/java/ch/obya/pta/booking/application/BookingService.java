@@ -24,6 +24,12 @@ package ch.obya.pta.booking.application;
  */
 
 import ch.obya.pta.booking.domain.*;
+import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.repository.SessionRepository;
+import ch.obya.pta.booking.domain.vo.*;
+import ch.obya.pta.common.application.EventPublisher;
+import ch.obya.pta.common.domain.event.Event;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -64,19 +70,19 @@ public class BookingService {
     private Uni<Session> findSession(SessionId session) {
         return sessionRepository.findById(session)
                 .ifNoItem().after(Duration.ofMillis(100))
-                .failWith(() -> BookingProblem.NoSession.toException(session));
+                .failWith(BookingProblem.NoSession.toException(session));
     }
 
     private Uni<SubscriptionId> findOneSubscription(Session session, ParticipantId participant) {
         return session.findBooking(participant)
                 .map(it -> Uni.createFrom().item(it.subscription()))
                 .orElseGet(() ->
-            findActiveSubscriptions(participant, session.slot().dow())
+            findActiveSubscriptions(participant, session.state().slot().dow())
                 .flatMap(candidates -> selectMatchingSubscriptions(candidates, session))
                 .flatMap(this::selectOneSubscription)
                 .map(Subscription::id)
                 .ifNoItem().after(Duration.ofMillis(100))
-                .failWith(() -> BookingProblem.NoActiveSubscription.toException(participant, session.id(), session.articleId())));
+                .failWith(BookingProblem.NoActiveSubscription.toException(participant, session.id(), session.articleId())));
     }
 
     private Uni<List<Subscription>> findActiveSubscriptions(ParticipantId participant, LocalDate sessionDate) {
@@ -109,7 +115,7 @@ public class BookingService {
                 .invoke(() -> sessionRepository.persist(session));
     }
 
-    private Uni<Void> notify(Collection<DomainEvent> events) {
+    private Uni<Void> notify(Collection<Event> events) {
         return eventPublisher.send(events);
     }
 }

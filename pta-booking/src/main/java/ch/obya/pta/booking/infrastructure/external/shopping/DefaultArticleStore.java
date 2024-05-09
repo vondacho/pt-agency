@@ -24,15 +24,13 @@ package ch.obya.pta.booking.infrastructure.external.shopping;
  */
 
 import ch.obya.pta.booking.application.ArticleStore;
-import ch.obya.pta.booking.domain.ArticleId;
-import io.quarkus.arc.Unremovable;
+import ch.obya.pta.booking.domain.vo.ArticleId;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
 import java.util.Set;
 
-@Unremovable
 @ApplicationScoped
 public class DefaultArticleStore implements ArticleStore {
     @Override

@@ -23,7 +23,7 @@ package ch.obya.pta.booking.infrastructure.web;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.ParticipantId;
+import ch.obya.pta.booking.domain.vo.ParticipantId;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
 import jakarta.ws.rs.ext.Provider;

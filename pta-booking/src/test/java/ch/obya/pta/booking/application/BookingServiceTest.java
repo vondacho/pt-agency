@@ -23,10 +23,16 @@ package ch.obya.pta.booking.application;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.*;
+import ch.obya.pta.booking.domain.BookingProblem;
+import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.event.*;
+import ch.obya.pta.booking.domain.repository.SessionRepository;
+import ch.obya.pta.booking.domain.vo.*;
+import ch.obya.pta.common.application.EventPublisher;
+import ch.obya.pta.common.domain.event.Event;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -59,7 +65,7 @@ public class BookingServiceTest {
     @InjectMocks
     BookingService bookingService;
     @Captor
-    ArgumentCaptor<Collection<DomainEvent>> eventCaptor;
+    ArgumentCaptor<Collection<Event>> eventCaptor;
     @Captor
     ArgumentCaptor<Session> persistedSessionCaptor;
 
@@ -135,9 +141,11 @@ public class BookingServiceTest {
                 .assertItem(new BookingId(session.id(), participant));
 
         verify(eventPublisher, times(1)).send(eventCaptor.capture());
-        assertThat(eventCaptor.getValue()).containsExactly(
-                new SessionBooked(session.id(), participant),
-                new SubscriptionCharged(subscription.id(), participant));
+        assertThat(eventCaptor.getValue())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
+                .containsExactlyInAnyOrder(
+                    new SessionBooked(session.id(), participant),
+                    new SubscriptionCharged(subscription.id(), participant));
 
         verify(sessionRepository, times(1)).persist(persistedSessionCaptor.capture());
         assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
@@ -163,7 +171,9 @@ public class BookingServiceTest {
                 .assertItem(new BookingId(session.id(), participant));
 
         verify(eventPublisher, times(1)).send(eventCaptor.capture());
-        assertThat(eventCaptor.getValue()).containsExactly(new ParticipantWaitlisted(session.id(), participant));
+        assertThat(eventCaptor.getValue())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
+                .containsExactly(new ParticipantWaitlisted(session.id(), participant));
 
         verify(sessionRepository, times(1)).persist(persistedSessionCaptor.capture());
         assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
@@ -185,9 +195,11 @@ public class BookingServiceTest {
                 .assertCompleted();
 
         verify(eventPublisher, times(1)).send(eventCaptor.capture());
-        assertThat(eventCaptor.getValue()).containsExactly(
-            new BookingCancelled(session.id(), participant),
-            new SubscriptionCredited(subscription.id(), participant));
+        assertThat(eventCaptor.getValue())
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
+                .containsExactlyInAnyOrder(
+                    new BookingCancelled(session.id(), participant),
+                    new SubscriptionCredited(subscription.id(), participant));
 
         verify(sessionRepository, times(1)).persist(persistedSessionCaptor.capture());
         assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
@@ -198,10 +210,10 @@ public class BookingServiceTest {
     }
 
     private Session sessionTest(int min, int max, ParticipantId withParticipant, SubscriptionId withSubscription) {
-        var id = new SessionId(UUID.randomUUID());
+        var id = SessionId.create();
         return new Session(
                 id,
-                new ArticleId(UUID.randomUUID()),
+                ArticleId.create(),
                 "test",
                 new Session.TimeSlot(LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), Duration.ofHours(1)),
                 new Location("one room"),
@@ -212,17 +224,17 @@ public class BookingServiceTest {
     private Subscription subscriptionTest() {
         var today = LocalDate.now();
         return new Subscription(
-                new SubscriptionId(UUID.randomUUID()),
-                new ArticleId(UUID.randomUUID()),
+                SubscriptionId.create(),
+                ArticleId.create(),
                 new Subscription.Validity(today, today.plusMonths(12)),
                 null);
     }
 
     private Booking bookingTest(SessionId session, ParticipantId participant, SubscriptionId subscription) {
-        return new Booking(new BookingId(session, participant), subscription, Booking.Status.DONE);
+        return Booking.done(session, participant, subscription);
     }
 
     private ParticipantId participantTest() {
-        return new ParticipantId(UUID.randomUUID());
+        return ParticipantId.create();
     }
 }
