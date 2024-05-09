@@ -31,6 +31,6 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pta-common/pom.xml
     - name: Publish to GitHub Packages
-      run: mvn --batch-mode deploy
+      run: mvn --batch-mode deploy --file pta-common/pom.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
