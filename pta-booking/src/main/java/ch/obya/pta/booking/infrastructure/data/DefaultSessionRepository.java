@@ -24,70 +24,35 @@ package ch.obya.pta.booking.infrastructure.data;
  */
 
 import ch.obya.pta.booking.domain.aggregate.Session;
-import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
-import ch.obya.pta.booking.domain.vo.*;
+import ch.obya.pta.booking.domain.vo.SessionId;
+import ch.obya.pta.common.util.search.FindCriteria;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 @ApplicationScoped
 public class DefaultSessionRepository implements SessionRepository {
-    @Override
-    public Uni<Session> findById(SessionId sessionId) {
-        return Uni.createFrom().item(sessionMock(sessionId));
-    }
 
     @Override
-    public Uni<List<Session>> findAllFromTo(LocalDate from, LocalDate to) {
-        return Uni.createFrom().item(List.of(sessionMock()));
+    public Uni<Session> findOne(SessionId id) {
+        return null;
     }
 
     @Override
-    public Uni<Session> findByBookingId(BookingId booking) {
-        return Uni.createFrom().item(sessionMock(booking));
+    public Uni<List<Session>> findByCriteria(Collection<FindCriteria> criteria) {
+        return null;
     }
 
     @Override
-    public Uni<Session> persist(Session session) {
-        return Uni.createFrom().item(session);
+    public Uni<Session> save(SessionId id, Session.State state) {
+        return null;
     }
 
-    private Session sessionMock(SessionId id) {
-        return new Session(
-                id,
-                new ArticleId(UUID.randomUUID()),
-                "test",
-                new Session.TimeSlot(LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), Duration.ofHours(1)),
-                new Location("one room"),
-                new Quota(3, 25),
-                new HashSet<>());
-    }
-
-    private Session sessionMock(BookingId id) {
-        var sessionId = SessionId.create();
-        return new Session(
-                sessionId,
-                ArticleId.create(),
-                "test",
-                new Session.TimeSlot(LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), Duration.ofHours(1)),
-                new Location("one room"),
-                new Quota(3, 25),
-                new HashSet<>(Set.of(prebookingMock(id))));
-    }
-
-    private Booking prebookingMock(BookingId id) {
-        return Booking.waiting(id.session(), id.participant(), SubscriptionId.create());
-    }
-
-    private Session sessionMock() {
-        return sessionMock(new SessionId(UUID.randomUUID()));
+    @Override
+    public Uni<Void> remove(SessionId id) {
+        return null;
     }
 }

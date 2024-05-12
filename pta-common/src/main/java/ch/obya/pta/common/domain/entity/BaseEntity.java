@@ -24,16 +24,15 @@ package ch.obya.pta.common.domain.entity;
  */
 
 import ch.obya.pta.common.domain.event.*;
-import ch.obya.pta.common.domain.repository.EntityRepository;
 import ch.obya.pta.common.domain.vo.Identity;
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 
 @ToString(of = {"id", "state"}, doNotUseGetters = true)
 @EqualsAndHashCode(of = "id", callSuper = false)
@@ -63,26 +62,14 @@ public abstract class BaseEntity<E extends BaseEntity<E, I, S>, I extends Identi
         return result;
     }
 
-    protected abstract S validate(S state);
+    protected S validate(S state) {
+        return state;
+    }
 
     protected E andEvent(Event...e) {
         events.addAll(List.of(e));
         return (E) this;
     }
 
-    protected S cloneState() {
-        return state;
-    }
-
-    /**
-     * Saves the entity state using the given entity repository
-     *
-     * @param repository instance of {@link EntityRepository} dedicated to the implementing entity class
-     * @return the entity instance
-     */
-    public E save(EntityRepository<E, I, S> repository) {
-        repository.save(id, state);
-        return (E) this;
-    }
-
+    protected abstract S cloneState();
 }

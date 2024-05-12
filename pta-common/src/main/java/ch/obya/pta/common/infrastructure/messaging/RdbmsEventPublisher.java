@@ -33,7 +33,7 @@ import java.util.Collection;
 @ApplicationScoped
 public class RdbmsEventPublisher implements EventPublisher {
     @Override
-    public Uni<Void> send(Collection<Event> events) {
+    public Uni<Void> publish(Collection<Event> events) {
         return null;
     }
 }

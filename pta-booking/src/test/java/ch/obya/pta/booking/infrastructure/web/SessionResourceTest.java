@@ -23,27 +23,23 @@ package ch.obya.pta.booking.infrastructure.web;
  * #L%
  */
 
-import ch.obya.pta.booking.application.ArticleStore;
-import ch.obya.pta.booking.application.ClientProfile;
-import ch.obya.pta.common.application.EventPublisher;
-import ch.obya.pta.booking.domain.aggregate.Session;
-import ch.obya.pta.booking.domain.entity.Booking;
-import ch.obya.pta.booking.domain.repository.SessionRepository;
-import ch.obya.pta.booking.domain.vo.*;
+import ch.obya.pta.booking.application.BookingService;
+import ch.obya.pta.booking.domain.util.Samples;
+import ch.obya.pta.booking.domain.vo.BookingId;
+import ch.obya.pta.booking.domain.vo.SessionId;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.Uni;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.*;
+import java.util.Map;
 
+import static ch.obya.pta.booking.domain.util.Samples.onePrivateSession;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @TestHTTPEndpoint(SessionResource.class)
@@ -51,31 +47,26 @@ import static org.mockito.Mockito.when;
 public class SessionResourceTest {
 
     @InjectMock
-    SessionRepository sessionRepository;
-    @InjectMock
-    ArticleStore articleStore;
-    @InjectMock
-    ClientProfile clientProfile;
-    @InjectMock
-    EventPublisher eventPublisher;
+    BookingService bookingService;
 
     @Test
-    void sessionNotFound() {
-        var session = sessionTest();
-        when(sessionRepository.findById(any())).thenReturn(Uni.createFrom().nothing());
+    void look_up_non_existing_session_resource_should_fail_with_404() {
+        var session = SessionId.create();
+        when(bookingService.findOne(any())).thenReturn(Uni.createFrom()
+                .failure(CommonProblem.EntityNotFound.toException("Session", session.id()).get()));
         given()
                 .when()
-                .get("/{id}", Map.of("id", session.id().id()))
+                .get("/{id}", Map.of("id", session.id()))
                 .then()
                 .log().all()
                 .statusCode(404)
-                .body("detail", equalTo("Session %s does not exist".formatted(session.id())));
+                .body("detail", equalTo("Session %s does not exist.".formatted(session.id())));
     }
 
     @Test
-    void lookUpOneSession() {
-        var session = sessionTest();
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
+    void look_up_existing_session_resource_should_succeed_with_200() {
+        var session = onePrivateSession.get();
+        when(bookingService.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         given()
                 .when()
                 .get("/{id}", Map.of("id", session.id().id()))
@@ -86,17 +77,12 @@ public class SessionResourceTest {
     }
 
     @Test
-    void bookOneSession() {
-        var session = sessionTest();
-        var participant = participantTest();
-        var subscription = subscriptionTest();
+    void booking_session_should_should_succeed_with_201() {
+        var session = onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
 
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
-        when(clientProfile.getSubscriptions(any(), any()))
-                .thenReturn(Uni.createFrom().item(List.of(subscription)));
-        when(articleStore.selectMatchingSubscriptions(anySet(), any()))
-                .thenReturn(Uni.createFrom().item(List.of(subscription.articleId())));
-        when(eventPublisher.send(anyCollection())).thenReturn(Uni.createFrom().voidItem());
+        when(bookingService.book(session.id(), participant)).thenReturn(
+                Uni.createFrom().item(new BookingId(session.id(), participant)));
 
         given()
                 .when()
@@ -110,11 +96,12 @@ public class SessionResourceTest {
     }
 
     @Test
-    void cancelBooking() {
-        var participant = participantTest();
-        var subscription = subscriptionTest();
-        var session = sessionTest(participant, subscription.id());
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
+    void cancel_booking_should_should_succeed_with_204() {
+        var session = Samples.oneSmallGroupSession.get();
+        var participant = Samples.oneParticipant.get();
+
+        when(bookingService.cancel(session.id(), participant)).thenReturn(Uni.createFrom().voidItem());
+
         given()
                 .when()
                 .delete("/{id}/bookings/{participant}", session.id().id(), participant.id())
@@ -123,36 +110,17 @@ public class SessionResourceTest {
                 .statusCode(204);
     }
 
-    private Session sessionTest() {
-        return sessionTest(null, null);
+    @Test
+    void remove_existing_session_resource_should_succeed_with_204() {
+        var session = onePrivateSession.get();
+        when(bookingService.remove(session.id())).thenReturn(Uni.createFrom().voidItem());
+
+        given()
+                .when()
+                .delete("/{id}", Map.of("id", session.id().id()))
+                .then()
+                .log().all()
+                .statusCode(204);
     }
 
-    private Session sessionTest(ParticipantId withParticipant, SubscriptionId withSubscription) {
-        var id = SessionId.create();
-        return new Session(
-                id,
-                ArticleId.create(),
-                "test",
-                new Session.TimeSlot(LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), Duration.ofHours(1)),
-                new Location("one room"),
-                new Quota(3, 25),
-                new HashSet<>(withParticipant != null ? Set.of(bookingTest(id, withParticipant, withSubscription)) : Collections.emptySet()));
-    }
-
-    private Booking bookingTest(SessionId session, ParticipantId participant, SubscriptionId subscription) {
-        return Booking.done(session, participant, subscription);
-    }
-
-    private Subscription subscriptionTest() {
-        var today = LocalDate.now();
-        return new Subscription(
-                SubscriptionId.create(),
-                ArticleId.create(),
-                new Subscription.Validity(today, today.plusMonths(12)),
-                null);
-    }
-
-    private ParticipantId participantTest() {
-        return ParticipantId.create();
-    }
 }

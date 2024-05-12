@@ -26,11 +26,11 @@ package ch.obya.pta.booking.domain.event;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
 import ch.obya.pta.booking.domain.vo.SubscriptionId;
 import ch.obya.pta.common.domain.event.Event;
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.util.CommonProblem;
 
 import java.time.Instant;
 
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 import static java.util.Optional.ofNullable;
 
 public record SubscriptionCharged(SubscriptionId subscription, ParticipantId participant, Instant timestamp) implements Event {

@@ -1,4 +1,4 @@
-package ch.obya.pta.common.util.exception;
+package ch.obya.pta.common.domain.util;
 
 /*-
  * #%L
@@ -40,7 +40,9 @@ public enum CommonProblem implements Problem {
     AttributeNotEmpty("Attribute %s cannot be empty."),
     ValueNotNull("Value %s cannot be null."),
     ValueNotEmpty("Value %s cannot be empty."),
-    EntityNotFound("Entity %s at %s does not exist.");
+    EntityNotFound("%s %s does not exist."),
+    QuotaInvalid("Quota (%s, %s) is not valid."),
+    ValidityInvalid("Validity (%s, %s) is not valid.");
 
     private final String text;
 
@@ -56,7 +58,7 @@ public enum CommonProblem implements Problem {
         ifThrow(s::isEmpty, exceptionSupplier);
     }
 
-    public static void ifEmptyThrow(Collection collection, Supplier<Exception> exceptionSupplier) {
+    public static void ifEmptyThrow(Collection<?> collection, Supplier<Exception> exceptionSupplier) {
         ifThrow(collection::isEmpty, exceptionSupplier);
     }
 }

@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.domain;
+package ch.obya.pta.customer.domain.util;
 
 /*-
  * #%L
@@ -23,7 +23,7 @@ package ch.obya.pta.booking.domain;
  * #L%
  */
 
-import ch.obya.pta.common.util.exception.Problem;
+import ch.obya.pta.common.domain.util.Problem;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -32,19 +32,15 @@ import lombok.experimental.Accessors;
 @Getter
 @Accessors(fluent = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public enum BookingProblem implements Problem {
+public enum CustomerProblem implements Problem {
 
-    NoSession("Session %s does not exist."),
-    SessionQuotaReached("Session %s: no more participant allowed, the quota (%d) is reached."),
-    SubscriptionQuotaReached("Subscription %s: no more session allowed, the quota (%d) is reached."),
-    NoActiveSubscription("No active subscription of participant %s applies to session %s (article %s)."),
-    SubscriptionStillNotActive("Subscription %s is still not active (%s < %s)"),
-    SubscriptionNoMoreActive("Subscription %s is no more active (%s > %s)."),
-    SubscriptionValidityInvalid("Subscription validity (%s, %s) is not valid."),
-    NoBooking("Booking on session %s for participant %s does not exist."),
-    NoSessionForBooking("Session with booking %s does not exist."),
-    QuotaInvalid("Quota (%s, %s) is not valid."),
-    TimeSlotInvalid("Week time slot (%s, %s, %s, %s) is not valid.");
+    NoCustomer("Customer %s does not exist."),
+    BirthDateInvalid("Birth date %s is not valid and cannot be in the future."),
+    EmailAddressInvalid("Email address %s is not valid and should match %s."),
+    PhoneNumberInvalid("Phone number %s is not valid and should match %s or %s."),
+    SubscriptionWithoutCredit("Subscription %s does not have credits."),
+    SubscriptionOverlapsExisting("Subscription %s overlaps existing subscription %s."),
+    AlreadyExisting("Customer (%s,%s,%s,%s) already exists.");
 
     private final String text;
 }

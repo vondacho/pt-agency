@@ -23,22 +23,27 @@ package ch.obya.pta.booking.application;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.*;
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.event.SessionRemoved;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
+import ch.obya.pta.booking.domain.util.BookingProblem;
 import ch.obya.pta.booking.domain.vo.*;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.event.Event;
+import ch.obya.pta.common.domain.util.EntityFinder;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -53,24 +58,31 @@ public class BookingService {
 
     private final EventPublisher eventPublisher;
 
+    @Transactional
     public Uni<BookingId> book(SessionId session, ParticipantId participant) {
-        return findSession(session)
+        return findOne(session)
                 .flatMap(it -> findOneSubscription(it, participant).map(su -> Tuple2.of(it, su)))
                 .flatMap(it -> makeBooking(it.getItem1(), participant, it.getItem2()).map(bo -> Tuple2.of(it.getItem1(), bo)))
                 .flatMap(it -> notify(it.getItem1().domainEvents()).replaceWith(it.getItem2()))
                 .map(Booking::id);
     }
 
+    @Transactional
     public Uni<Void> cancel(SessionId session, ParticipantId participant) {
-        return findSession(session)
+        return findOne(session)
                 .flatMap(it -> cancelBooking(it, participant).replaceWith(it))
                 .flatMap(it -> notify(it.domainEvents()));
     }
 
-    private Uni<Session> findSession(SessionId session) {
-        return sessionRepository.findById(session)
-                .ifNoItem().after(Duration.ofMillis(100))
-                .failWith(BookingProblem.NoSession.toException(session));
+    public Uni<Session> findOne(SessionId id) {
+        return EntityFinder.find(Session.class, id, sessionRepository::findOne, CommonProblem.EntityNotFound);
+    }
+
+    @Transactional
+    public Uni<Void> remove(SessionId session) {
+        return findOne(session)
+                .flatMap(c -> sessionRepository.remove(session))
+                .invoke(() -> eventPublisher.publish(Set.of(new SessionRemoved(session))));
     }
 
     private Uni<SubscriptionId> findOneSubscription(Session session, ParticipantId participant) {
@@ -106,16 +118,16 @@ public class BookingService {
     private Uni<Booking> makeBooking(Session session, ParticipantId participant, SubscriptionId subscriptionId) {
         return Uni.createFrom()
                 .item(session.book(participant, subscriptionId))
-                .invoke(() -> sessionRepository.persist(session));
+                .invoke(() -> sessionRepository.save(session));
     }
 
     private Uni<Void> cancelBooking(Session session, ParticipantId participant) {
         return Uni.createFrom().voidItem()
                 .invoke(() -> session.cancel(participant))
-                .invoke(() -> sessionRepository.persist(session));
+                .invoke(() -> sessionRepository.save(session));
     }
 
     private Uni<Void> notify(Collection<Event> events) {
-        return eventPublisher.send(events);
+        return eventPublisher.publish(events);
     }
 }

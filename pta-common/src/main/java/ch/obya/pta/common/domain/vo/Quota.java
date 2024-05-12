@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.domain.vo;
+package ch.obya.pta.common.domain.vo;
 
 /*-
  * #%L
@@ -23,29 +23,27 @@ package ch.obya.pta.booking.domain.vo;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.BookingProblem;
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import lombok.Builder;
 
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
-import static ch.obya.pta.common.util.exception.CommonProblem.ifThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifThrow;
 
 @Builder(builderClassName = "Builder", toBuilder = true)
 public record Quota(Integer min, Integer max) {
     public Quota {
-        ifNullThrow(min, CommonProblem.AttributeNotNull.toException("Quota.min"));
-        ifThrow(() -> (min < 0 || (max != null && (max < 0 || min > max))), BookingProblem.QuotaInvalid.toException(min, max));
+        ifThrow(() -> min == null && max == null, CommonProblem.QuotaInvalid.toException(min, max));
+        ifThrow(() -> ((min != null && min < 0) || (max != null && (max < 0 || (min != null && min > max)))), CommonProblem.QuotaInvalid.toException(min, max));
     }
 
-    public boolean contains(Integer count) {
-        return min <= count && (max == null || max >= count);
+    public boolean inQuota(Integer count) {
+        return (min == null || min <= count) && (max == null || max >= count);
     }
 
-    public boolean above(Integer count) {
+    public boolean lowerThanMinQuota(Integer count) {
         return min > count;
     }
 
-    public boolean exceededBy(Integer count) {
+    public boolean moreThanMaxQuota(Integer count) {
         return max != null && count > max;
     }
 }

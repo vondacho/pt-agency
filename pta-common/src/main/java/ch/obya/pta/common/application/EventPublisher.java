@@ -30,5 +30,5 @@ import java.util.Collection;
 
 public interface EventPublisher {
 
-    Uni<Void> send(Collection<Event> events);
+    Uni<Void> publish(Collection<Event> events);
 }

@@ -1,4 +1,4 @@
-package ch.obya.pta.common.util.exception;
+package ch.obya.pta.common.domain.util;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -14,6 +14,10 @@ public interface Problem {
 
     default Supplier<Exception> toException(Object...parameters) {
         return () -> new Exception(name(), text(), parameters);
+    }
+
+    default String text(Object...parameters) {
+        return text().formatted(parameters);
     }
 
     @Getter

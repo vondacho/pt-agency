@@ -23,19 +23,9 @@ package ch.obya.pta.booking.domain.repository;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.vo.BookingId;
-import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.booking.domain.aggregate.Session;
-import io.smallrye.mutiny.Uni;
+import ch.obya.pta.booking.domain.vo.SessionId;
+import ch.obya.pta.common.domain.repository.EntityRepository;
 
-import java.time.LocalDate;
-import java.util.List;
-
-public interface SessionRepository {
-
-    Uni<Session> findById(SessionId sessionId);
-    Uni<List<Session>> findAllFromTo(LocalDate from, LocalDate to);
-    Uni<Session> findByBookingId(BookingId booking);
-    Uni<Session> persist(Session session);
-
+public interface SessionRepository extends EntityRepository<Session, SessionId, Session.State> {
 }

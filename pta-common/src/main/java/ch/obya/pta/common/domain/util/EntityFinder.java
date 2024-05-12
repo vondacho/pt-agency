@@ -23,9 +23,9 @@ package ch.obya.pta.common.domain.util;
  * #L%
  */
 
-import ch.obya.pta.common.util.exception.CommonProblem;
+import io.smallrye.mutiny.Uni;
 
-import java.util.Optional;
+import java.time.Duration;
 import java.util.function.Function;
 
 public class EntityFinder {
@@ -33,9 +33,10 @@ public class EntityFinder {
     private EntityFinder() {
     }
 
-    public static <T,U> T find(Class<T> clazz, U id, Function<U, Optional<T>> finder) {
+    public static <E,I> Uni<E> find(Class<E> clazz, I id, Function<I, Uni<E>> finder, Problem doesNotExist) {
         return finder
                 .apply(id)
-                .orElseThrow(CommonProblem.EntityNotFound.toException(clazz, id));
+                .ifNoItem().after(Duration.ofMillis(100))
+                .failWith(doesNotExist.toException(clazz.getSimpleName(), id.toString()));
     }
 }

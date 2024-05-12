@@ -1,13 +1,12 @@
 package ch.obya.pta.customer.domain.vo;
 
-import ch.obya.pta.common.util.exception.CommonProblem;
-import ch.obya.pta.customer.domain.CustomerProblem;
+import ch.obya.pta.common.domain.util.CommonProblem;
+import ch.obya.pta.customer.domain.util.CustomerProblem;
 import lombok.Builder;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
-import static ch.obya.pta.common.util.exception.CommonProblem.*;
+import static ch.obya.pta.common.domain.util.CommonProblem.*;
 
 @Builder(builderClassName = "Builder", toBuilder = true)
 public record Person(
@@ -19,13 +18,14 @@ public record Person(
         ) {
 
     public Person {
+        ifNullThrow(firstName, CommonProblem.AttributeNotNull.toException("Person.firstName"));
         ifNullThrow(lastName, CommonProblem.AttributeNotNull.toException("Person.lastName"));
         ifNullThrow(birthDate, CommonProblem.AttributeNotNull.toException("Person.birthDate"));
         ifNullThrow(gender, CommonProblem.AttributeNotNull.toException("Person.gender"));
     }
 
     public String fullName() {
-        return Optional.ofNullable(firstName).map(fn -> "%s %s".formatted(fn, lastName.content)).orElse(lastName.content);
+        return "%s %s".formatted(firstName.content, lastName.content);
     }
 
     public record Name(String content) {

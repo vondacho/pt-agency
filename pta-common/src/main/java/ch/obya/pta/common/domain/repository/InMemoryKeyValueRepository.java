@@ -27,14 +27,15 @@ import ch.obya.pta.common.domain.entity.BaseEntity;
 import ch.obya.pta.common.domain.entity.Entity;
 import ch.obya.pta.common.domain.vo.Identity;
 import ch.obya.pta.common.util.search.FindCriteria;
+import io.smallrye.mutiny.Uni;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
 import static java.util.stream.Collectors.toList;
@@ -52,35 +53,35 @@ public class InMemoryKeyValueRepository<E extends Entity<E, I, S>, I extends Ide
     }
 
     @Override
-    public Optional<E> findOne(I id) {
-        return Optional.ofNullable(store.get(id)).map(s -> entityCreator.apply(id, s));
+    public Uni<E> findOne(I id) {
+        return Uni.createFrom().item(store.get(id)).map(s -> entityCreator.apply(id, s));
     }
 
     @Override
-    public List<E> findByCriteria(List<FindCriteria> criteria) {
-        return store.entrySet().stream().map(e -> entityCreator.apply(e.getKey(), e.getValue())).collect(toList());
+    public Uni<List<E>> findByCriteria(Collection<FindCriteria> criteria) {
+        return Uni.createFrom().item(store.entrySet().stream().map(e -> entityCreator.apply(e.getKey(), e.getValue())).collect(toList()));
     }
 
     @Override
-    public E save(I id, S state) {
+    public Uni<E> save(I id, S state) {
         store.put(id, state);
-        return entityCreator.apply(id, state);
+        return Uni.createFrom().item(entityCreator.apply(id, state));
     }
 
     @Override
-    public void delete(I id) {
+    public Uni<Void> remove(I id) {
         store.remove(id);
+        return Uni.createFrom().voidItem();
     }
 
     private class DefaultEntity extends BaseEntity<DefaultEntity, I, S> {
-
         DefaultEntity(I identity, S state) {
             super(identity, state);
         }
 
         @Override
-        public S validate(S state) {
-            throw new UnsupportedOperationException();
+        protected S cloneState() {
+            return state;
         }
     }
 }

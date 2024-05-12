@@ -1,7 +1,7 @@
-package ch.obya.pta.customer.domain.vo;
+package ch.obya.pta.customer.domain.util;
 
 import ch.obya.pta.common.util.validation.Checker;
-import ch.obya.pta.customer.domain.CustomerProblem;
+import ch.obya.pta.customer.domain.vo.PhoneNumber;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberMatch;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;

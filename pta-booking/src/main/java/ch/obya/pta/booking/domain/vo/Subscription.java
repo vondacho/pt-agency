@@ -23,30 +23,16 @@ package ch.obya.pta.booking.domain.vo;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.BookingProblem;
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.vo.Validity;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import lombok.Builder;
 
-import java.time.LocalDate;
-
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
-import static ch.obya.pta.common.util.exception.CommonProblem.ifThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 
 @Builder(builderClassName = "Builder", toBuilder = true)
 public record Subscription(SubscriptionId id,
                            ArticleId articleId,
-                           Validity validity,
-                           Quota quota) {
-    public record Validity(LocalDate from, LocalDate to) {
-        public Validity {
-            ifNullThrow(from, CommonProblem.AttributeNotNull.toException("Subscription.Validity.id"));
-            ifThrow(() -> to != null && from.isAfter(to), BookingProblem.SubscriptionValidityInvalid.toException(from, to));
-        }
-
-        public boolean includes(LocalDate date) {
-            return !(date.isBefore(from) || (to == null || date.isAfter(to)));
-        }
-    }
+                           Validity validity) {
 
     public Subscription {
         ifNullThrow(id, CommonProblem.AttributeNotNull.toException("Subscription.id"));

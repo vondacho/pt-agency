@@ -23,12 +23,13 @@ package ch.obya.pta.booking.domain.aggregate;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.BookingProblem;
+import ch.obya.pta.booking.domain.util.BookingProblem;
 import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.event.*;
 import ch.obya.pta.booking.domain.vo.*;
 import ch.obya.pta.common.domain.entity.BaseEntity;
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.vo.Quota;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,8 +43,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static ch.obya.pta.booking.domain.entity.Booking.Status.WAITING_LIST;
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
-import static ch.obya.pta.common.util.exception.CommonProblem.ifThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifThrow;
 
 @Accessors(chain = true, fluent = true)
 @Getter
@@ -76,13 +77,18 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
     }
 
     public Session(SessionId id, ArticleId articleId, String title, TimeSlot slot, Location location, Quota quota, Set<Booking> bookings) {
-        super(id, new State(title, slot, location, quota, bookings));
+        super(id, new State(title, slot, location, quota, new HashSet<>(bookings)));
         ifNullThrow(articleId, CommonProblem.AttributeNotNull.toException("Session.articleId"));
         this.articleId = articleId;
     }
 
     public Session(ArticleId articleId, String title, TimeSlot slot, Location location, Quota quota) {
         this(SessionId.create(), articleId, title, slot, location, quota, new HashSet<>());
+    }
+
+    @Override
+    protected State cloneState() {
+        return state.toBuilder().build();
     }
 
     @Override
@@ -104,8 +110,8 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
             andEvent(new SessionBooked(this.id, participant),
                     new SubscriptionCharged(subscription, participant));
         } else {
-            if (state.quota.contains(state.bookings.size())) {
-                if (state.quota.exceededBy(state.bookings.size() + 1)) {
+            if (state.quota.inQuota(state.bookings.size())) {
+                if (state.quota.moreThanMaxQuota(state.bookings.size() + 1)) {
                     booking = Booking.waiting(id, participant, subscription);
                     andEvent(new ParticipantWaitlisted(this.id, participant));
                 } else {
@@ -113,7 +119,7 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
                     andEvent(new SessionBooked(this.id, participant),
                             new SubscriptionCharged(subscription, participant));
                 }
-            } else if (state.quota.contains(state.bookings.size() + 1)) {
+            } else if (state.quota.inQuota(state.bookings.size() + 1)) {
                 var confirmedBookings = state.bookings.stream().map(Booking::confirmed).toList();
                 state.bookings.clear();
                 state.bookings.addAll(confirmedBookings);

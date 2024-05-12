@@ -23,14 +23,16 @@ package ch.obya.pta.booking.application;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.BookingProblem;
+import ch.obya.pta.booking.domain.util.BookingProblem;
 import ch.obya.pta.booking.domain.aggregate.Session;
-import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.event.*;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
-import ch.obya.pta.booking.domain.vo.*;
+import ch.obya.pta.booking.domain.vo.BookingId;
+import ch.obya.pta.booking.domain.vo.SessionId;
+import ch.obya.pta.booking.domain.util.Samples;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.event.Event;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 import org.junit.jupiter.api.Test;
@@ -41,10 +43,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,25 +70,49 @@ public class BookingServiceTest {
     ArgumentCaptor<Session> persistedSessionCaptor;
 
     @Test
-    void sessionDoesNotExist() {
-        var session = sessionTest(1,1);
-        var participant = participantTest();
+    void look_up_non_existing_session_should_fail() {
+        var session = SessionId.create();
 
-        when(sessionRepository.findById(any())).thenReturn(Uni.createFrom().nothing());
+        when(sessionRepository.findOne(session)).thenReturn(Uni.createFrom().nothing());
 
-        var result = bookingService.book(session.id(), participant);
+        var result = bookingService.findOne(session);
 
         result.subscribe().withSubscriber(UniAssertSubscriber.create())
                 .awaitFailure()
-                .assertFailedWith(BookingProblem.Exception.class, "Session %s does not exist.".formatted(session.id()));
+                .assertFailedWith(CommonProblem.Exception.class, "Session %s does not exist.".formatted(session));
     }
 
     @Test
-    void participantWithoutActiveSubscription() {
-        var session = sessionTest(1,1);
-        var participant = participantTest();
+    void look_up_session_should_return_expected_entity() {
+        var session = Samples.onePrivateSession.get();
 
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
+
+        var result = bookingService.findOne(session.id()).subscribe().withSubscriber(UniAssertSubscriber.create()).getItem();
+
+        assertThat(result.id()).isEqualTo(session.id());
+    }
+
+    @Test
+    void booking_non_session_should_fail() {
+        var session = SessionId.create();
+        var participant = Samples.oneParticipant.get();
+
+        when(sessionRepository.findOne(any())).thenReturn(Uni.createFrom().nothing());
+
+        var result = bookingService.book(session, participant);
+
+        result.subscribe().withSubscriber(UniAssertSubscriber.create())
+                .awaitFailure()
+                .assertFailedWith(BookingProblem.Exception.class, "Session %s does not exist.".formatted(session));
+    }
+
+    @Test
+    void booking_session_without_subscription_should_fail() {
+        var session = Samples.onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
+
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.getSubscriptions(any(), any())).thenReturn(Uni.createFrom().nothing());
 
         var result = bookingService.book(session.id(), participant);
@@ -101,12 +125,12 @@ public class BookingServiceTest {
     }
 
     @Test
-    void noActiveSubscriptionCanApplyToSession() {
-        var session = sessionTest(1,1);
-        var participant = participantTest();
-        var subscription = subscriptionTest();
+    void booking_session_without_compatible_subscription_should_fail() {
+        var session = Samples.onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
+        var subscription = Samples.oneSubscription.get();
 
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.getSubscriptions(any(), any()))
                 .thenReturn(Uni.createFrom().item(List.of(subscription)));
         when(articleStore.selectMatchingSubscriptions(anySet(), any()))
@@ -122,17 +146,17 @@ public class BookingServiceTest {
     }
 
     @Test
-    void participantBooksOneSession() {
-        var session = sessionTest(1,1);
-        var participant = participantTest();
-        var subscription = subscriptionTest();
+    void booking_session_return_booking_entity_and_charge_subscription() {
+        var session = Samples.onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
+        var subscription = Samples.oneSubscription.get();
 
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.getSubscriptions(any(), any()))
                 .thenReturn(Uni.createFrom().item(List.of(subscription)));
         when(articleStore.selectMatchingSubscriptions(anySet(), any()))
                 .thenReturn(Uni.createFrom().item(List.of(subscription.articleId())));
-        when(eventPublisher.send(anyCollection())).thenReturn(Uni.createFrom().voidItem());
+        when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
 
         var result = bookingService.book(session.id(), participant);
 
@@ -140,29 +164,32 @@ public class BookingServiceTest {
                 .awaitItem()
                 .assertItem(new BookingId(session.id(), participant));
 
-        verify(eventPublisher, times(1)).send(eventCaptor.capture());
+        verify(sessionRepository, times(1)).save(persistedSessionCaptor.capture());
+        assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
+
+        verify(eventPublisher, times(1)).publish(eventCaptor.capture());
         assertThat(eventCaptor.getValue())
                 .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
                 .containsExactlyInAnyOrder(
                     new SessionBooked(session.id(), participant),
                     new SubscriptionCharged(subscription.id(), participant));
-
-        verify(sessionRepository, times(1)).persist(persistedSessionCaptor.capture());
-        assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
     }
 
     @Test
-    void participantBooksOneFullSession() {
-        var session = sessionTest(1,1, participantTest(), subscriptionTest().id());
-        var participant = participantTest();
-        var subscription = subscriptionTest();
+    void booking_full_session_return_one_booking_with_status_waiting() {
+        var session = Samples.onePrivateSession.get();
+        session.book(Samples.oneParticipant.get(), Samples.oneSubscription.get().id());
+        session.domainEvents();
 
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
+        var participant = Samples.oneParticipant.get();
+        var subscription = Samples.oneSubscription.get();
+
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.getSubscriptions(any(), any()))
                 .thenReturn(Uni.createFrom().item(List.of(subscription)));
         when(articleStore.selectMatchingSubscriptions(anySet(), any()))
                 .thenReturn(Uni.createFrom().item(List.of(subscription.articleId())));
-        when(eventPublisher.send(anyCollection())).thenReturn(Uni.createFrom().voidItem());
+        when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
 
         var result = bookingService.book(session.id(), participant);
 
@@ -170,23 +197,25 @@ public class BookingServiceTest {
                 .awaitItem()
                 .assertItem(new BookingId(session.id(), participant));
 
-        verify(eventPublisher, times(1)).send(eventCaptor.capture());
+        verify(sessionRepository, times(1)).save(persistedSessionCaptor.capture());
+        assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
+
+        verify(eventPublisher, times(1)).publish(eventCaptor.capture());
         assertThat(eventCaptor.getValue())
                 .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
                 .containsExactly(new ParticipantWaitlisted(session.id(), participant));
-
-        verify(sessionRepository, times(1)).persist(persistedSessionCaptor.capture());
-        assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
     }
 
     @Test
-    void participantCancelOneBooking() {
-        var participant = participantTest();
-        var subscription = subscriptionTest();
-        var session = sessionTest(1,1, participant, subscription.id());
+    void cancelling_booking_credits_used_subscription() {
+        var session = Samples.onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
+        var subscription = Samples.oneSubscription.get();
+        session.book(participant, subscription.id());
+        session.domainEvents();
 
-        when(sessionRepository.findById(session.id())).thenReturn(Uni.createFrom().item(session));
-        when(eventPublisher.send(anyCollection())).thenReturn(Uni.createFrom().voidItem());
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
+        when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
 
         var result = bookingService.cancel(session.id(), participant);
 
@@ -194,47 +223,14 @@ public class BookingServiceTest {
                 .awaitItem()
                 .assertCompleted();
 
-        verify(eventPublisher, times(1)).send(eventCaptor.capture());
+        verify(sessionRepository, times(1)).save(persistedSessionCaptor.capture());
+        assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
+
+        verify(eventPublisher, times(1)).publish(eventCaptor.capture());
         assertThat(eventCaptor.getValue())
                 .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
                 .containsExactlyInAnyOrder(
                     new BookingCancelled(session.id(), participant),
                     new SubscriptionCredited(subscription.id(), participant));
-
-        verify(sessionRepository, times(1)).persist(persistedSessionCaptor.capture());
-        assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
-    }
-
-    private Session sessionTest(int min, int max) {
-        return sessionTest(min, max, null, null);
-    }
-
-    private Session sessionTest(int min, int max, ParticipantId withParticipant, SubscriptionId withSubscription) {
-        var id = SessionId.create();
-        return new Session(
-                id,
-                ArticleId.create(),
-                "test",
-                new Session.TimeSlot(LocalDate.now(), LocalTime.of(9, 0), LocalTime.of(10, 0), Duration.ofHours(1)),
-                new Location("one room"),
-                new Quota(min, max),
-                new HashSet<>(withParticipant != null ? Set.of(bookingTest(id, withParticipant, withSubscription)) : Collections.emptySet()));
-    }
-
-    private Subscription subscriptionTest() {
-        var today = LocalDate.now();
-        return new Subscription(
-                SubscriptionId.create(),
-                ArticleId.create(),
-                new Subscription.Validity(today, today.plusMonths(12)),
-                null);
-    }
-
-    private Booking bookingTest(SessionId session, ParticipantId participant, SubscriptionId subscription) {
-        return Booking.done(session, participant, subscription);
-    }
-
-    private ParticipantId participantTest() {
-        return ParticipantId.create();
     }
 }

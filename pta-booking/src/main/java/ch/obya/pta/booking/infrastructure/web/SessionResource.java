@@ -24,10 +24,11 @@ package ch.obya.pta.booking.infrastructure.web;
  */
 
 import ch.obya.pta.booking.application.BookingService;
+import ch.obya.pta.booking.domain.repository.SessionRepository;
 import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
 import ch.obya.pta.booking.domain.vo.SessionId;
-import ch.obya.pta.booking.domain.repository.SessionRepository;
+import ch.obya.pta.common.util.search.FindCriteria;
 import io.quarkus.resteasy.reactive.links.InjectRestLinks;
 import io.quarkus.resteasy.reactive.links.RestLink;
 import io.quarkus.resteasy.reactive.links.RestLinkType;
@@ -40,12 +41,13 @@ import org.jboss.resteasy.reactive.RestQuery;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
-@Path("/sessions")
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+
 @Produces("application/problem+json")
+@Path("/sessions")
 public class SessionResource {
 
     @Inject
@@ -57,9 +59,11 @@ public class SessionResource {
     @RestLink
     @GET
     public Uni<List<SessionDto>> list(@RestQuery LocalDate from, @RestQuery LocalDate to) {
-        return sessionRepository.findAllFromTo(from, to)
-                .onItem().transform(it -> it.stream().map(SessionDto::from).toList())
-                .ifNoItem().after(Duration.ofMillis(100)).fail();
+        return sessionRepository.findByCriteria(
+                FindCriteria.from("from:%s,to:%s".formatted(
+                        ISO_LOCAL_DATE.format(from),
+                        ISO_LOCAL_DATE.format(to))))
+                .map(it -> it.stream().map(SessionDto::from).toList());
     }
 
     @InjectRestLinks(RestLinkType.INSTANCE)
@@ -67,10 +71,9 @@ public class SessionResource {
     @GET
     @Path("{id}")
     public Uni<SessionDto> get(SessionId id) {
-        return sessionRepository.findById(id)
-                .onItem().transform(SessionDto::from)
-                .ifNoItem().after(Duration.ofMillis(100))
-                .failWith(() -> Problem.valueOf(Status.NOT_FOUND, "Session %s does not exist".formatted(id)));
+        return bookingService.findOne(id)
+                .onFailure().transform(f -> Problem.valueOf(Status.NOT_FOUND, f.getMessage()))
+                .map(SessionDto::from);
     }
 
     @ResponseStatus(201)
@@ -79,6 +82,7 @@ public class SessionResource {
     @POST
     @Path("{id}")
     public Uni<SessionId> create() {
+        //TODO
         return Uni.createFrom().nothing();
     }
 
@@ -87,13 +91,14 @@ public class SessionResource {
     @PUT
     @Path("{id}")
     public Uni<SessionId> update(SessionId id) {
+        //TODO
         return Uni.createFrom().nothing();
     }
 
     @DELETE
     @Path("{id}")
     public Uni<Void> remove(SessionId id) {
-        return Uni.createFrom().nothing();
+        return bookingService.remove(id);
     }
 
     @ResponseStatus(201)
@@ -113,10 +118,9 @@ public class SessionResource {
     @GET
     @Path("{id}/bookings")
     public Multi<BookingDto> listBookings(SessionId id) {
-        return sessionRepository.findById(id)
-                .ifNoItem().after(Duration.ofMillis(100))
-                .failWith(() -> Problem.valueOf(Status.NOT_FOUND, "Session %s does not exist".formatted(id)))
+        return bookingService.findOne(id)
+                .onFailure().transform(f -> Problem.valueOf(Status.NOT_FOUND, f.getMessage()))
                 .onItem().transformToMulti(s -> Multi.createFrom().iterable(s.bookings()))
-                .onItem().transform(BookingDto::from);
+                .map(BookingDto::from);
     }
 }

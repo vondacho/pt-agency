@@ -23,10 +23,10 @@ package ch.obya.pta.booking.domain.vo;
  * #L%
  */
 
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.util.CommonProblem;
 
-import static ch.obya.pta.common.util.exception.CommonProblem.ifEmptyThrow;
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifEmptyThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 
 public record Location(String name) {
     public Location {

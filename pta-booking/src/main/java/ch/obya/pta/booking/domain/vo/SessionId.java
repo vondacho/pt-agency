@@ -24,11 +24,11 @@ package ch.obya.pta.booking.domain.vo;
  */
 
 import ch.obya.pta.common.domain.vo.Identity;
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.util.CommonProblem;
 
 import java.util.UUID;
 
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 
 public record SessionId(UUID id) implements Identity {
     public SessionId {

@@ -1,16 +1,18 @@
 package ch.obya.pta.customer.domain.vo;
 
-import ch.obya.pta.common.util.exception.CommonProblem;
+import ch.obya.pta.common.domain.util.CommonProblem;
 import ch.obya.pta.common.util.validation.Checker;
+import ch.obya.pta.customer.domain.util.CustomerProblem;
 
 import java.util.regex.Pattern;
 
-import static ch.obya.pta.common.util.exception.CommonProblem.ifEmptyThrow;
-import static ch.obya.pta.common.util.exception.CommonProblem.ifNullThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifEmptyThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 
 public record EmailAddress(String address) {
 
-    public static Pattern EMAIL = Pattern.compile("[a-zA-Z0-9]+(?:\\.[a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9]+)+");
+    public static Pattern EMAIL = Pattern.compile(
+            "^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$");
 
     public EmailAddress {
         ifNullThrow(address, CommonProblem.AttributeNotNull.toException("EmailAddress.address"));
@@ -19,8 +21,8 @@ public record EmailAddress(String address) {
 
     public static class EmailAddressChecker implements Checker<EmailAddress> {
         public EmailAddress check(EmailAddress emailAddress) {
-//            if (!EMAIL.matcher(emailAddress.address).hasMatch())
-//                throw CustomerProblem.EmailAddressInvalid.toException(emailAddress.address, EMAIL.pattern()).get();
+            if (!EMAIL.matcher(emailAddress.address).matches())
+                throw CustomerProblem.EmailAddressInvalid.toException(emailAddress.address, EMAIL.pattern()).get();
             return emailAddress;
         }
     }
