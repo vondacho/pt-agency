@@ -6,9 +6,10 @@
     <parent>
         <groupId>ch.obya</groupId>
         <artifactId>pta</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
     <artifactId>pta-common</artifactId>
+    <version>${common.module.version}</version>
     <build>
         <plugins>
             <plugin>
