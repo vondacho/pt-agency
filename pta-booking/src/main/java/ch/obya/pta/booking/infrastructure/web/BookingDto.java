@@ -24,12 +24,12 @@ package ch.obya.pta.booking.infrastructure.web;
  */
 
 import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.vo.ParticipantId;
+import ch.obya.pta.booking.domain.vo.SessionId;
 
-import java.util.UUID;
-
-public record BookingDto(UUID session, UUID participant) {
+public record BookingDto(SessionId session, ParticipantId participant) {
 
     public static BookingDto from(Booking booking) {
-        return new BookingDto(booking.id().session().id(), booking.id().participant().id());
+        return new BookingDto(booking.id().session(), booking.id().participant());
     }
 }

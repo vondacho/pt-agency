@@ -25,16 +25,30 @@ package ch.obya.pta.booking.infrastructure.external.shopping;
 
 import ch.obya.pta.booking.application.ArticleStore;
 import ch.obya.pta.booking.domain.vo.ArticleId;
-import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
-
-import java.util.List;
-import java.util.Set;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.resteasy.reactive.RestQuery;
 
 @ApplicationScoped
-public class DefaultArticleStore implements ArticleStore {
+public class ArticleStoreAdapter implements ArticleStore {
+
+    @RestClient
+    ArticleStoreRestClient client;
+
     @Override
-    public Uni<List<ArticleId>> selectMatchingSubscriptions(Set<ArticleId> subscriptions, ArticleId articleId) {
-        return null;
+    public Multi<ArticleId> eligibleSubscriptionsFor(ArticleId session) {
+        return client.eligibleSubscriptions(session);
+    }
+
+    @Path("/articles")
+    @RegisterRestClient
+    private interface ArticleStoreRestClient {
+        @GET
+        @Path("/{id}/subscriptions")
+        Multi<ArticleId> eligibleSubscriptions(ArticleId id);
     }
 }

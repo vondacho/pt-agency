@@ -27,6 +27,7 @@ import ch.obya.pta.common.domain.entity.BaseEntity;
 import ch.obya.pta.common.domain.entity.Entity;
 import ch.obya.pta.common.domain.vo.Identity;
 import ch.obya.pta.common.util.search.FindCriteria;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -58,8 +59,8 @@ public class InMemoryKeyValueRepository<E extends Entity<E, I, S>, I extends Ide
     }
 
     @Override
-    public Uni<List<E>> findByCriteria(Collection<FindCriteria> criteria) {
-        return Uni.createFrom().item(store.entrySet().stream().map(e -> entityCreator.apply(e.getKey(), e.getValue())).collect(toList()));
+    public Multi<E> findByCriteria(Collection<FindCriteria> criteria) {
+        return Multi.createFrom().iterable(store.entrySet().stream().map(e -> entityCreator.apply(e.getKey(), e.getValue())).collect(toList()));
     }
 
     @Override

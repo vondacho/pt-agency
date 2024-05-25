@@ -24,6 +24,7 @@ package ch.obya.pta.customer.infrastructure.web;
  */
 
 import ch.obya.pta.common.domain.util.CommonProblem;
+import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.customer.application.CustomerService;
 import ch.obya.pta.customer.domain.aggregate.Customer;
 import ch.obya.pta.customer.domain.vo.*;
@@ -42,6 +43,7 @@ import java.util.function.Consumer;
 import static ch.obya.pta.customer.domain.util.Samples.oneCustomer;
 import static ch.obya.pta.customer.domain.util.Samples.oneCustomerWithOneYearSubscription;
 import static io.restassured.RestAssured.given;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -94,6 +96,7 @@ class CustomerResourceTest {
         when(customerService.findOne(customer.id())).thenReturn(Uni.createFrom().item(customer));
         var result = given()
                 .when()
+                .queryParams("at", ISO_LOCAL_DATE.format(LocalDate.now()))
                 .get("/{id}/subscriptions", Map.of("id", customer.id().id()))
                 .then()
                 .log().all()
@@ -135,8 +138,8 @@ class CustomerResourceTest {
         when(customerService.modify(any(), any())).thenReturn(Uni.createFrom().voidItem());
 
         var dto = new CustomerDto.Builder()
-                .firstName(new Person.Name("albert"))
-                .lastName(new Person.Name("einstein"))
+                .firstName(new Name("albert"))
+                .lastName(new Name("einstein"))
                 .birthDate(new Person.BirthDate(LocalDate.of(1958, 12, 12)))
                 .gender(Person.Gender.MALE)
                 .build();
@@ -151,7 +154,7 @@ class CustomerResourceTest {
                 .statusCode(204);
 
         verifyModifier(customer, m -> {
-            verify(m).rename(new Person.Name("albert"), new Person.Name("einstein"));
+            verify(m).rename(new Name("albert"), new Name("einstein"));
             verify(m).redefine(new Person.BirthDate(LocalDate.of(1958, 12, 12)), Person.Gender.MALE);
         });
     }
@@ -171,7 +174,7 @@ class CustomerResourceTest {
                 .statusCode(204);
 
         verifyModifier(customer, m -> {
-            verify(m).rename(new Person.Name("albert"), new Person.Name("einstein"));
+            verify(m).rename(new Name("albert"), new Name("einstein"));
             verify(m).redefine(new Person.BirthDate(LocalDate.of(1958, 12, 12)), Person.Gender.MALE);
         });
     }
@@ -190,7 +193,7 @@ class CustomerResourceTest {
                 .statusCode(204);
 
         verifyModifier(customer, m -> verify(m)
-                .rename(new Person.Name("albert"), new Person.Name("einstein")));
+                .rename(new Name("albert"), new Name("einstein")));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package ch.obya.pta.customer.domain;
 
+import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.util.validation.Checker;
 import ch.obya.pta.customer.domain.event.CustomerCreated;
 import ch.obya.pta.customer.domain.event.CustomerModified;
@@ -45,7 +46,7 @@ class CustomerTest {
         var state = customer.state();
 
         customer.modify()
-                .rename(new Person.Name("albert"), new Person.Name("einstein"))
+                .rename(new Name("albert"), new Name("einstein"))
                 .redefine(new Person.BirthDate(LocalDate.of(1958, 12,12)), Person.Gender.MALE)
                 .reconnect(new EmailAddress("albert@einstein.com"), new PhoneNumber("+33123456789"))
                 .relocate(new PhysicalAddress("Bakerstreet 22", "89000", "London", "London", "UK"), state.deliveryAddress())

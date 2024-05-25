@@ -33,6 +33,7 @@ import ch.obya.pta.customer.domain.event.CustomerRemoved;
 import ch.obya.pta.customer.domain.repository.CustomerRepository;
 import ch.obya.pta.customer.domain.vo.CustomerId;
 import ch.obya.pta.customer.domain.util.Samples;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 import org.junit.jupiter.api.Test;
@@ -95,7 +96,7 @@ public class CustomerServiceTest {
     void create_customer_should_persist_and_publish_and_return_expected_id() {
         var template = Samples.oneCustomer.get().state();
 
-        when(customerRepository.findByCriteria(anyCollection())).thenReturn(Uni.createFrom().item(Collections.emptyList()));
+        when(customerRepository.findByCriteria(anyCollection())).thenReturn(Multi.createFrom().iterable(Collections.emptyList()));
         when(customerRepository.save(any()))
                 .thenAnswer(invocation -> Uni.createFrom().item(invocation.getArgument(0, Customer.class)));
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
@@ -123,7 +124,7 @@ public class CustomerServiceTest {
         var template = Samples.oneCustomer.get().state();
 
         when(customerRepository.findByCriteria(anyCollection())).thenReturn(
-                Uni.createFrom().item(List.of(Samples.oneCustomer.get())));
+                Multi.createFrom().iterable(List.of(Samples.oneCustomer.get())));
 
         var result = customerService.create(
                 template.person(),
@@ -148,7 +149,7 @@ public class CustomerServiceTest {
         var customer = Samples.oneCustomer.get();
 
         when(customerRepository.findOne(customer.id())).thenReturn(Uni.createFrom().item(customer));
-        when(customerRepository.findByCriteria(anyCollection())).thenReturn(Uni.createFrom().item(Collections.emptyList()));
+        when(customerRepository.findByCriteria(anyCollection())).thenReturn(Multi.createFrom().iterable(Collections.emptyList()));
         when(customerRepository.save(any()))
                 .thenAnswer(invocation -> Uni.createFrom().item(invocation.getArgument(0, Customer.class)));
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
@@ -174,7 +175,7 @@ public class CustomerServiceTest {
 
         when(customerRepository.findOne(customer.id())).thenReturn(Uni.createFrom().item(customer));
         when(customerRepository.findByCriteria(anyCollection())).thenReturn(
-                Uni.createFrom().item(List.of(Samples.oneCustomer.get())));
+                Multi.createFrom().iterable(List.of(Samples.oneCustomer.get())));
 
         var result = customerService.modify(customer.id(), m -> m.annotate("modified").done());
 

@@ -159,9 +159,9 @@ components:
       type: object
       properties:
         session:
-          $ref: "#/components/schemas/UUID"
+          $ref: "#/components/schemas/SessionId"
         participant:
-          $ref: "#/components/schemas/UUID"
+          $ref: "#/components/schemas/ParticipantId"
     BookingId:
       type: object
       properties:
@@ -182,7 +182,7 @@ components:
       type: object
       properties:
         id:
-          $ref: "#/components/schemas/UUID"
+          $ref: "#/components/schemas/SessionId"
     SessionId:
       type: object
       properties:

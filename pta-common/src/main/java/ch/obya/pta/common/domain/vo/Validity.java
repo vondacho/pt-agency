@@ -22,5 +22,17 @@ public record Validity(LocalDate from, LocalDate to) {
                 || (other.to != null && includes(other.to))
                 || (other.from.isBefore(from) && (other.to == null || other.to.isAfter(to)));
     }
+
+    public Validity closeOn(LocalDate date) {
+        return new Validity(from, date);
+    }
+
+    public static Validity openOn(LocalDate date) {
+        return new Validity(date, null);
+    }
+
+    public static Validity fromNow() {
+        return new Validity(LocalDate.now(), null);
+    }
 }
 

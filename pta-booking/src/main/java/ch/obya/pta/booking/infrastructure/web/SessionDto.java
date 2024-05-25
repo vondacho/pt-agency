@@ -24,12 +24,10 @@ package ch.obya.pta.booking.infrastructure.web;
  */
 
 import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.vo.SessionId;
 
-import java.util.UUID;
-
-public record SessionDto(UUID id) {
-
+public record SessionDto(SessionId id) {
     public static SessionDto from(Session session) {
-        return new SessionDto(session.id().id());
+        return new SessionDto(session.id());
     }
 }

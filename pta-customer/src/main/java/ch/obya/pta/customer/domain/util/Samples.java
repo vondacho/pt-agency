@@ -1,5 +1,6 @@
 package ch.obya.pta.customer.domain.util;
 
+import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.vo.Validity;
 import ch.obya.pta.customer.domain.aggregate.Customer;
@@ -17,8 +18,8 @@ public class Samples {
     public static Customer customer() {
         return new Customer(
                 new Person("Mr",
-                        new Person.Name("john"),
-                        new Person.Name("doe"),
+                        new Name("john"),
+                        new Name("doe"),
                         new Person.BirthDate(LocalDate.of(1966, 4, 5)),
                         Person.Gender.MALE),
                 new PhysicalAddress("test-delivery", "zip", "city", "region", "ch"),

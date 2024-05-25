@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.application;
+package ch.obya.pta.shopping.domain.vo;
 
 /*-
  * #%L
@@ -23,14 +23,19 @@ package ch.obya.pta.booking.application;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.vo.ParticipantId;
-import ch.obya.pta.booking.domain.vo.Subscription;
-import io.smallrye.mutiny.Uni;
+import ch.obya.pta.common.domain.util.CommonProblem;
+import ch.obya.pta.common.domain.vo.Identity;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.util.UUID;
 
-public interface ClientProfile {
+import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 
-    Uni<List<Subscription>> getSubscriptions(ParticipantId participant, LocalDate validAt);
+public record ArticleId(UUID id) implements Identity {
+    public ArticleId {
+        ifNullThrow(id, CommonProblem.AttributeNotNull.toException("ArticleId.id"));
+    }
+
+    public static ArticleId create() {
+        return new ArticleId(UUID.randomUUID());
+    }
 }

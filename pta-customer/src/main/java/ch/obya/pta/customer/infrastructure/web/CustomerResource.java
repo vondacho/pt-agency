@@ -1,10 +1,11 @@
 package ch.obya.pta.customer.infrastructure.web;
 
+import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.util.search.FindCriteria;
 import ch.obya.pta.customer.application.CustomerService;
-import ch.obya.pta.customer.domain.aggregate.Customer;
 import ch.obya.pta.customer.domain.repository.CustomerRepository;
 import ch.obya.pta.customer.domain.vo.*;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -13,7 +14,7 @@ import org.jboss.resteasy.reactive.RestQuery;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Produces("application/problem+json")
 @Path("/customers")
@@ -46,20 +47,19 @@ public class CustomerResource {
     @PUT
     @Path("/{id}")
     public Uni<Void> modify(CustomerId id, CustomerDto input) {
-        return service.modify(id, customer -> {
-            customer.rename(input.firstName(), input.lastName());
-            customer.redefine(input.birthDate(), input.gender());
-            customer.reconnect(input.emailAddress(), input.phoneNumber());
-            customer.relocate(input.deliveryAddress(), input.billingAddress());
-            customer.annotate(input.notes());
-        });
+        return service.modify(id, customer -> customer
+            .rename(input.firstName(), input.lastName())
+            .redefine(input.birthDate(), input.gender())
+            .reconnect(input.emailAddress(), input.phoneNumber())
+            .relocate(input.deliveryAddress(), input.billingAddress())
+            .annotate(input.notes()));
     }
 
     @ResponseStatus(204)
     @PATCH
     @Path("/{id}")
     public Uni<Void> modify(CustomerId id,
-                            @RestQuery Person.Name firstname, @RestQuery Person.Name lastname,
+                            @RestQuery Name firstname, @RestQuery Name lastname,
                             @RestQuery Person.BirthDate birthdate, @RestQuery Person.Gender gender,
                             @RestQuery EmailAddress email, @RestQuery PhoneNumber phone,
                             @RestQuery PhysicalAddress delivery, @RestQuery PhysicalAddress billing,
@@ -77,7 +77,7 @@ public class CustomerResource {
     @ResponseStatus(204)
     @PUT
     @Path("/{id}/naming")
-    public Uni<Void> rename(CustomerId id, @RestQuery Person.Name firstname, @RestQuery Person.Name lastname) {
+    public Uni<Void> rename(CustomerId id, @RestQuery Name firstname, @RestQuery Name lastname) {
         return service.modify(id, customer -> customer.rename(firstname, lastname));
     }
 
@@ -111,20 +111,18 @@ public class CustomerResource {
     }
 
     @GET
-    @Path("/{id}/subscriptions")
-    public Uni<List<SubscriptionDto>> subscriptions(CustomerId id) {
-        return service.findOne(id)
-                .onFailure().transform(f -> Problem.valueOf(Status.NOT_FOUND, f.getMessage()))
-                .map(Customer::subscriptions)
-                .map(ls -> ls.stream().map(SubscriptionDto::from).toList());
+    public Multi<CustomerDto> findByCriteria(@RestQuery String filter) {
+        return repository.findByCriteria(filter.isEmpty() ? FindCriteria.empty() : FindCriteria.from(filter))
+                .map(CustomerDto::from);
     }
 
     @GET
-    public Uni<List<CustomerDto>> findByCriteria(@RestQuery String filter) {
-        return (filter.isEmpty() ?
-            repository.findByCriteria(FindCriteria.empty()) :
-                repository.findByCriteria(FindCriteria.from(filter))
-        ).map(ls -> ls.stream().map(CustomerDto::from).toList());
+    @Path("/{id}/subscriptions")
+    public Multi<SubscriptionDto> validSubscriptionsOf(CustomerId id, @RestQuery LocalDate at) {
+        return service.findOne(id)
+                .onFailure().transform(f -> Problem.valueOf(Status.NOT_FOUND, f.getMessage()))
+                .onItem().transformToMulti(s -> Multi.createFrom().iterable(s.subscriptionsAt(at)))
+                .map(SubscriptionDto::from);
     }
 
     @ResponseStatus(204)

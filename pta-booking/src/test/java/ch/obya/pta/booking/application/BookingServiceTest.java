@@ -23,16 +23,17 @@ package ch.obya.pta.booking.application;
  * #L%
  */
 
-import ch.obya.pta.booking.domain.util.BookingProblem;
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.event.*;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
+import ch.obya.pta.booking.domain.util.BookingProblem;
+import ch.obya.pta.booking.domain.util.Samples;
 import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.SessionId;
-import ch.obya.pta.booking.domain.util.Samples;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.event.Event;
 import ch.obya.pta.common.domain.util.CommonProblem;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 import org.junit.jupiter.api.Test;
@@ -44,11 +45,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collection;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +58,7 @@ public class BookingServiceTest {
     @Mock
     ArticleStore articleStore;
     @Mock
-    ClientProfile clientProfile;
+    CustomerProfile clientProfile;
     @Mock
     SessionRepository sessionRepository;
     @InjectMocks
@@ -113,7 +112,7 @@ public class BookingServiceTest {
         var participant = Samples.oneParticipant.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
-        when(clientProfile.getSubscriptions(any(), any())).thenReturn(Uni.createFrom().nothing());
+        when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().nothing());
 
         var result = bookingService.book(session.id(), participant);
 
@@ -131,10 +130,8 @@ public class BookingServiceTest {
         var subscription = Samples.oneSubscription.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
-        when(clientProfile.getSubscriptions(any(), any()))
-                .thenReturn(Uni.createFrom().item(List.of(subscription)));
-        when(articleStore.selectMatchingSubscriptions(anySet(), any()))
-                .thenReturn(Uni.createFrom().nothing());
+        when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
+        when(articleStore.eligibleSubscriptionsFor(any())).thenReturn(Multi.createFrom().nothing());
 
         var result = bookingService.book(session.id(), participant);
 
@@ -152,10 +149,8 @@ public class BookingServiceTest {
         var subscription = Samples.oneSubscription.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
-        when(clientProfile.getSubscriptions(any(), any()))
-                .thenReturn(Uni.createFrom().item(List.of(subscription)));
-        when(articleStore.selectMatchingSubscriptions(anySet(), any()))
-                .thenReturn(Uni.createFrom().item(List.of(subscription.articleId())));
+        when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
+        when(articleStore.eligibleSubscriptionsFor(any())).thenReturn(Multi.createFrom().items(subscription.articleId()));
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
 
         var result = bookingService.book(session.id(), participant);
@@ -185,10 +180,8 @@ public class BookingServiceTest {
         var subscription = Samples.oneSubscription.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
-        when(clientProfile.getSubscriptions(any(), any()))
-                .thenReturn(Uni.createFrom().item(List.of(subscription)));
-        when(articleStore.selectMatchingSubscriptions(anySet(), any()))
-                .thenReturn(Uni.createFrom().item(List.of(subscription.articleId())));
+        when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
+        when(articleStore.eligibleSubscriptionsFor(any())).thenReturn(Multi.createFrom().items(subscription.articleId()));
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
 
         var result = bookingService.book(session.id(), participant);

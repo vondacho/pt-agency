@@ -1,5 +1,6 @@
 package ch.obya.pta.customer.infrastructure.web;
 
+import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.customer.domain.vo.*;
 import jakarta.ws.rs.ext.ParamConverter;
@@ -17,9 +18,9 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 @Provider
 public class CustomerAttributeConverterProvider implements ParamConverterProvider {
 
-    private Map<Class, ParamConverter> converters = Map.of(
+    private final Map<Class, ParamConverter> converters = Map.of(
             CustomerId.class, new CustomerIdConverter(),
-            Person.Name.class, new NameConverter(),
+            Name.class, new NameConverter(),
             Person.BirthDate.class, new BirthDateConverter(),
             EmailAddress.class, new EmailAddressConverter(),
             PhoneNumber.class, new PhoneNumberConverter(),
@@ -69,14 +70,14 @@ public class CustomerAttributeConverterProvider implements ParamConverterProvide
         }
     }
 
-    private static class NameConverter implements ParamConverter<Person.Name> {
+    private static class NameConverter implements ParamConverter<Name> {
         @Override
-        public Person.Name fromString(String value) {
-            return new Person.Name(value);
+        public Name fromString(String value) {
+            return new Name(value);
         }
 
         @Override
-        public String toString(Person.Name value) {
+        public String toString(Name value) {
             return value.content();
         }
     }

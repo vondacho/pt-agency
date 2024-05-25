@@ -73,7 +73,7 @@ public class SessionResourceTest {
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("id", equalTo(session.id().id().toString()));
+                .body("id.id", equalTo(session.id().id().toString()));
     }
 
     @Test

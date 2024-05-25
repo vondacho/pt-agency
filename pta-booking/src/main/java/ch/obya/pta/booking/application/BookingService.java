@@ -31,8 +31,9 @@ import ch.obya.pta.booking.domain.util.BookingProblem;
 import ch.obya.pta.booking.domain.vo.*;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.event.Event;
-import ch.obya.pta.common.domain.util.EntityFinder;
 import ch.obya.pta.common.domain.util.CommonProblem;
+import ch.obya.pta.common.domain.util.EntityFinder;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -42,9 +43,9 @@ import lombok.RequiredArgsConstructor;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -54,7 +55,7 @@ public class BookingService {
 
     private final ArticleStore articleStore;
 
-    private final ClientProfile clientProfile;
+    private final CustomerProfile clientProfile;
 
     private final EventPublisher eventPublisher;
 
@@ -88,31 +89,22 @@ public class BookingService {
     private Uni<SubscriptionId> findOneSubscription(Session session, ParticipantId participant) {
         return session.findBooking(participant)
                 .map(it -> Uni.createFrom().item(it.subscription()))
-                .orElseGet(() ->
-            findActiveSubscriptions(participant, session.state().slot().dow())
-                .flatMap(candidates -> selectMatchingSubscriptions(candidates, session))
-                .flatMap(this::selectOneSubscription)
-                .map(Subscription::id)
-                .ifNoItem().after(Duration.ofMillis(100))
-                .failWith(BookingProblem.NoActiveSubscription.toException(participant, session.id(), session.articleId())));
+                .orElseGet(() -> activeSubscriptionsOf(participant, session.state().slot().dow())
+                    .collect().asMap(Subscription::articleId, it -> it)
+                    .onItem().transformToMulti(it -> eligibleSubscriptions(it, session))
+                    .select().first().toUni().map(Subscription::id)
+                    .ifNoItem().after(Duration.ofMillis(100))
+                    .failWith(BookingProblem.NoActiveSubscription.toException(participant, session.id(), session.articleId())));
     }
 
-    private Uni<List<Subscription>> findActiveSubscriptions(ParticipantId participant, LocalDate sessionDate) {
-        return clientProfile.getSubscriptions(participant, sessionDate)
-                .flatMap(it -> it.isEmpty() ? Uni.createFrom().nothing() : Uni.createFrom().item(it));
+    private Multi<Subscription> activeSubscriptionsOf(ParticipantId participant, LocalDate sessionDate) {
+        return clientProfile.validSubscriptionsOf(participant, sessionDate);
     }
 
-    private Uni<List<Subscription>> selectMatchingSubscriptions(List<Subscription> candidates, Session session) {
-        var candidatesByArticle = candidates.stream().collect(Collectors.toMap(Subscription::articleId, it -> it));
-        return articleStore.selectMatchingSubscriptions(candidatesByArticle.keySet(), session.articleId())
-                .flatMap(it -> it.isEmpty() ? Uni.createFrom().nothing() : Uni.createFrom().item(it))
-                .map(matches -> matches.stream().map(candidatesByArticle::get).toList());
-    }
-
-    private Uni<Subscription> selectOneSubscription(List<Subscription> candidates) {
-        return candidates.stream()
-                .findFirst().map(c -> Uni.createFrom().item(c))
-                .orElseGet(() -> Uni.createFrom().nothing());
+    private Multi<Subscription> eligibleSubscriptions(Map<ArticleId, Subscription> subscriptions , Session session) {
+        return articleStore.eligibleSubscriptionsFor(session.articleId())
+                .map(subscriptions::get)
+                .select().where(Objects::nonNull);
     }
 
     private Uni<Booking> makeBooking(Session session, ParticipantId participant, SubscriptionId subscriptionId) {

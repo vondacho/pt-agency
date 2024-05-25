@@ -24,12 +24,9 @@ package ch.obya.pta.booking.application;
  */
 
 import ch.obya.pta.booking.domain.vo.ArticleId;
-import io.smallrye.mutiny.Uni;
-
-import java.util.List;
-import java.util.Set;
+import io.smallrye.mutiny.Multi;
 
 public interface ArticleStore {
 
-    Uni<List<ArticleId>> selectMatchingSubscriptions(Set<ArticleId> subscriptions, ArticleId articleId);
+    Multi<ArticleId> eligibleSubscriptionsFor(ArticleId session);
 }

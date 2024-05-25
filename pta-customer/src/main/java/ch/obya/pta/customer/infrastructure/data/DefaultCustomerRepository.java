@@ -4,11 +4,11 @@ import ch.obya.pta.common.util.search.FindCriteria;
 import ch.obya.pta.customer.domain.aggregate.Customer;
 import ch.obya.pta.customer.domain.repository.CustomerRepository;
 import ch.obya.pta.customer.domain.vo.CustomerId;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Collection;
-import java.util.List;
 
 @ApplicationScoped
 public class DefaultCustomerRepository implements CustomerRepository {
@@ -18,7 +18,7 @@ public class DefaultCustomerRepository implements CustomerRepository {
     }
 
     @Override
-    public Uni<List<Customer>> findByCriteria(Collection<FindCriteria> criteria) {
+    public Multi<Customer> findByCriteria(Collection<FindCriteria> criteria) {
         return null;
     }
 

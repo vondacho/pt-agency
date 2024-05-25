@@ -26,18 +26,18 @@ package ch.obya.pta.common.domain.repository;
 import ch.obya.pta.common.domain.entity.Entity;
 import ch.obya.pta.common.domain.vo.Identity;
 import ch.obya.pta.common.util.search.FindCriteria;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface EntityRepository<E extends Entity<E, I, S>, I extends Identity, S> {
 
     Uni<E> findOne(I id);
 
-    Uni<List<E>> findByCriteria(Collection<FindCriteria> criteria);
+    Multi<E> findByCriteria(Collection<FindCriteria> criteria);
 
-    default Uni<List<E>> findAll() {
+    default Multi<E> findAll() {
         return findByCriteria(FindCriteria.empty());
     }
 

@@ -1,5 +1,6 @@
 package ch.obya.pta.customer.infrastructure.web;
 
+import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.customer.domain.aggregate.Customer;
 import ch.obya.pta.customer.domain.vo.*;
 import lombok.Builder;
@@ -8,8 +9,8 @@ import lombok.Builder;
 public record CustomerDto(
     CustomerId id,
     String salutation,
-    Person.Name firstName,
-    Person.Name lastName,
+    Name firstName,
+    Name lastName,
     Person.BirthDate birthDate,
     Person.Gender gender,
     PhysicalAddress deliveryAddress,
@@ -20,18 +21,17 @@ public record CustomerDto(
 
     public static CustomerDto from(Customer customer) {
         var state = customer.state();
-        return new CustomerDto(
-                customer.id(),
-                state.person().salutation(),
-                state.person().firstName(),
-                state.person().lastName(),
-                state.person().birthDate(),
-                state.person().gender(),
-                state.deliveryAddress(),
-                state.billingAddress(),
-                state.emailAddress(),
-                state.phoneNumber(),
-                state.notes()
-        );
+        return CustomerDto.builder()
+                .id(customer.id())
+                .salutation(state.person().salutation())
+                .firstName(                state.person().firstName())
+                .lastName(                state.person().lastName())
+                .birthDate(                state.person().birthDate())
+                .gender(                state.person().gender())
+                .deliveryAddress(                state.deliveryAddress())
+                .billingAddress(                state.billingAddress())
+                .emailAddress(                state.emailAddress())
+                .phoneNumber(                state.phoneNumber())
+                .notes(                state.notes()).build();
     }
 }

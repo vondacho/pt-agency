@@ -14,6 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.time.Duration;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -21,7 +22,7 @@ import java.util.function.Consumer;
 public class CustomerService {
 
     @Inject
-    CustomerRepository customerRepository;
+    CustomerRepository repository;
     @Inject
     EventPublisher eventPublisher;
 
@@ -33,7 +34,7 @@ public class CustomerService {
                                   PhoneNumber phoneNumber,
                                   String notes) {
 
-        return checkUniqueness(person, emailAddress).replaceWith(
+        return checkUniqueness(null, person, emailAddress).replaceWith(
                 Uni.createFrom().item(
                     new Customer(
                             person,
@@ -43,7 +44,7 @@ public class CustomerService {
                             phoneNumber,
                             notes
                     ))
-                .flatMap(c -> customerRepository.save(c))
+                .flatMap(c -> repository.save(c))
                 .flatMap(c -> eventPublisher.publish(c.domainEvents()).replaceWith(c))
                 .map(Customer::id));
     }
@@ -59,36 +60,34 @@ public class CustomerService {
                 })
                 .flatMap(c -> {
                     var state = c.state();
-                    return checkUniqueness(state.person(), state.emailAddress()).replaceWith(c);
+                    return checkUniqueness(customerId, state.person(), state.emailAddress()).replaceWith(c);
                 })
-                .flatMap(c -> customerRepository.save(c))
+                .flatMap(c -> repository.save(c))
                 .flatMap(c -> eventPublisher.publish(c.domainEvents()));
     }
 
-    private Uni<Void> checkUniqueness(Person person, EmailAddress emailAddress) {
-        return customerRepository.findByCriteria(
-                FindCriteria.from("""
+    private Uni<Void> checkUniqueness(CustomerId exclude, Person person, EmailAddress emailAddress) {
+        return repository.findByCriteria(FindCriteria.from("""
                     firstName:%s,
                     lastName:%s,
                     birthDate:%s
                     emailAddress:%s
                     """.formatted(person.firstName(), person.lastName(), person.birthDate(), emailAddress.address())))
-                .invoke(result -> {
-                    if (!result.isEmpty()) {
-                        throw CustomerProblem.AlreadyExisting.toException(
-                            person.firstName(), person.lastName(), person.birthDate(), emailAddress).get();
-                    }
-                }).replaceWithVoid();
+                .select().where(c -> !c.id().equals(exclude))
+                .onItem().failWith(CustomerProblem.AlreadyExisting.toException(
+                            person.firstName(), person.lastName(), person.birthDate(), emailAddress))
+                .ifNoItem().after(Duration.ofMillis(100))
+                .recoverWithCompletion().toUni().replaceWithVoid();
     }
 
     @Transactional
     public Uni<Void> remove(CustomerId customerId) {
         return findOne(customerId)
-                .flatMap(c -> customerRepository.remove(customerId))
-                .invoke(() -> eventPublisher.publish(Set.of(new CustomerRemoved(customerId))));
+                .flatMap(c -> repository.remove(customerId))
+                .flatMap(c -> eventPublisher.publish(Set.of(new CustomerRemoved(customerId))));
     }
 
     public Uni<Customer> findOne(CustomerId id) {
-        return EntityFinder.find(Customer.class, id, customerRepository::findOne, CommonProblem.EntityNotFound);
+        return EntityFinder.find(Customer.class, id, repository::findOne, CommonProblem.EntityNotFound);
     }
 }

@@ -1,4 +1,4 @@
-package ch.obya.pta.booking.infrastructure.external.clients;
+package ch.obya.pta.shopping.domain.util;
 
 /*-
  * #%L
@@ -23,19 +23,19 @@ package ch.obya.pta.booking.infrastructure.external.clients;
  * #L%
  */
 
-import ch.obya.pta.booking.application.ClientProfile;
-import ch.obya.pta.booking.domain.vo.ParticipantId;
-import ch.obya.pta.booking.domain.vo.Subscription;
-import io.smallrye.mutiny.Uni;
-import jakarta.enterprise.context.ApplicationScoped;
+import ch.obya.pta.common.domain.util.Problem;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
-import java.time.LocalDate;
-import java.util.List;
+@Getter
+@Accessors(fluent = true)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+public enum ArticleProblem implements Problem {
 
-@ApplicationScoped
-public class DefaultClientProfile implements ClientProfile {
-    @Override
-    public Uni<List<Subscription>> getSubscriptions(ParticipantId participant, LocalDate validAt) {
-        return null;
-    }
+    NoCustomer("Article %s does not exist."),
+    AlreadyExisting("Article (%s) already exists in the period (%s,%s).");
+
+    private final String text;
 }

@@ -15,10 +15,10 @@
     </modules>
 
     <properties>
-        <common.module.version>0.2.0-SNAPSHOT</common.module.version>
-        <customer.module.version>0.2.0-SNAPSHOT</customer.module.version>
-        <booking.module.version>0.2.0-SNAPSHOT</booking.module.version>
-        <shopping.module.version>0.1.0-SNAPSHOT</shopping.module.version>
+        <common.module.version>0.3.0-SNAPSHOT</common.module.version>
+        <customer.module.version>0.2.1-SNAPSHOT</customer.module.version>
+        <booking.module.version>0.2.1-SNAPSHOT</booking.module.version>
+        <shopping.module.version>0.2.0-SNAPSHOT</shopping.module.version>
         <invoicing.module.version>0.1.0-SNAPSHOT</invoicing.module.version>
         <designer.module.version>0.1.0-SNAPSHOT</designer.module.version>
 
@@ -26,9 +26,11 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.9.4</quarkus.platform.version>
+        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
+        <quarkus.platform.version>3.11.0</quarkus.platform.version>
+
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
@@ -75,6 +77,10 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-links</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

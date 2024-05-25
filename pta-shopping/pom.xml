@@ -8,4 +8,11 @@
     </parent>
     <artifactId>pta-shopping</artifactId>
     <version>${shopping.module.version}</version>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>pta-common</artifactId>
+            <version>${common.module.version}</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -42,7 +42,6 @@ import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
@@ -58,12 +57,12 @@ public class SessionResource {
     @InjectRestLinks
     @RestLink
     @GET
-    public Uni<List<SessionDto>> list(@RestQuery LocalDate from, @RestQuery LocalDate to) {
+    public Multi<SessionDto> list(@RestQuery LocalDate from, @RestQuery LocalDate to) {
         return sessionRepository.findByCriteria(
                 FindCriteria.from("from:%s,to:%s".formatted(
                         ISO_LOCAL_DATE.format(from),
                         ISO_LOCAL_DATE.format(to))))
-                .map(it -> it.stream().map(SessionDto::from).toList());
+                .map(SessionDto::from);
     }
 
     @InjectRestLinks(RestLinkType.INSTANCE)

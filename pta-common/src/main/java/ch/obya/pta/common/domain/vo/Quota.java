@@ -46,4 +46,24 @@ public record Quota(Integer min, Integer max) {
     public boolean moreThanMaxQuota(Integer count) {
         return max != null && count > max;
     }
+
+    public static Quota unlimited() {
+        return Quota.builder().min(0).max(null).build();
+    }
+
+    public static Quota limited(int max) {
+        return Quota.builder().min(0).max(max).build();
+    }
+
+    public static Quota of(Integer min, Integer max) {
+        return Quota.builder().min(min).max(max).build();
+    }
+
+    public Quota consume(int count) {
+        if (max != null) {
+            ifThrow(() -> count > max, CommonProblem.QuotaInvalid.toException(min, max - count));
+            return Quota.of(min, max - count);
+        }
+        return this;
+    }
 }
