@@ -262,10 +262,11 @@ class CustomerResourceTest {
     @Test
     void remove_existing_customer_resource_should_succeed_with_204() {
         var customer = oneCustomer.get();
-        when(customerService.remove(customer.id())).thenReturn(Uni.createFrom().voidItem());
+        when(customerService.remove(customer.id(), true)).thenReturn(Uni.createFrom().voidItem());
 
         given()
                 .when()
+                .queryParams("force", "true")
                 .delete("/{id}", Map.of("id", customer.id().id()))
                 .then()
                 .log().all()

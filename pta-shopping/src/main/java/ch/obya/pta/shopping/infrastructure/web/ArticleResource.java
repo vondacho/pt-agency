@@ -28,7 +28,7 @@ import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.vo.Text;
 import ch.obya.pta.common.util.search.FindCriteria;
 import ch.obya.pta.shopping.domain.repository.ArticleRepository;
-import ch.obya.pta.shopping.domain.service.ArticleService;
+import ch.obya.pta.shopping.application.ArticleService;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
@@ -132,7 +132,7 @@ public class ArticleResource {
 
     @DELETE
     @Path("{id}")
-    public Uni<Void> remove(ArticleId id) {
-        return service.remove(id);
+    public Uni<Void> remove(ArticleId id, @RestQuery Boolean force) {
+        return service.remove(id, force != null && force);
     }
 }

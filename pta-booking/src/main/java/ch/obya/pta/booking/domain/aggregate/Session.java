@@ -42,7 +42,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static ch.obya.pta.booking.domain.entity.Booking.Status.WAITING_LIST;
+import static ch.obya.pta.booking.domain.entity.Booking.Status.WAITING;
 import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 import static ch.obya.pta.common.domain.util.CommonProblem.ifThrow;
 
@@ -151,7 +151,7 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
     }
 
     private void promoteOneWaitingParticipant() {
-        state.bookings.stream().filter(it -> WAITING_LIST == it.status()).findFirst().ifPresent(booking -> {
+        state.bookings.stream().filter(it -> WAITING == it.status()).findFirst().ifPresent(booking -> {
             state.bookings.removeIf(b -> b.id().equals(booking.id()));
             state.bookings.add(Booking.done(this.id, booking.id().participant(), booking.subscription()));
             andEvent(new SessionBooked(this.id, booking.id().participant()),

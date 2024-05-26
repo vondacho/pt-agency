@@ -65,6 +65,10 @@ public class Customer extends BaseEntity<Customer, CustomerId, Customer.State> {
         return state.toBuilder().build();
     }
 
+    public Customer close() {
+        return this;
+    }
+
     @Override
     protected State validate(State state) {
         return state.toBuilder()

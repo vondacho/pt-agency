@@ -128,7 +128,7 @@ public class CustomerResource {
     @ResponseStatus(204)
     @DELETE
     @Path("/{id}")
-    public Uni<Void> remove(CustomerId id) {
-        return service.remove(id);
+    public Uni<Void> remove(CustomerId id, @RestQuery Boolean force) {
+        return service.remove(id, force != null && force);
     }
 }

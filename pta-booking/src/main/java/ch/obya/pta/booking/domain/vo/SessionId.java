@@ -38,4 +38,8 @@ public record SessionId(UUID id) implements Identity {
     public static SessionId create() {
         return new SessionId(UUID.randomUUID());
     }
+
+    public static SessionId parse(String s) {
+        return new SessionId(UUID.fromString(s));
+    }
 }

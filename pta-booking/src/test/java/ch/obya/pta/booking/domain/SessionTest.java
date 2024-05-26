@@ -61,7 +61,7 @@ public class SessionTest {
         assertThat(state.quota()).isEqualTo(new Quota(2, 2));
 
         var participant1 = Samples.oneParticipant.get();
-        var subscription = Samples.oneSubscription.get();
+        var subscription = Samples.oneYearlySubscription.get();
 
         var booking = session.book(participant1, subscription.id());
 
@@ -109,7 +109,7 @@ public class SessionTest {
                 .containsExactlyInAnyOrder(
                         tuple(Booking.Status.DONE, participant1),
                         tuple(Booking.Status.DONE, participant2),
-                        tuple(Booking.Status.WAITING_LIST, participant3));
+                        tuple(Booking.Status.WAITING, participant3));
         assertThat(session.domainEvents())
                 .usingRecursiveFieldByFieldElementComparatorIgnoringFields("timestamp")
                 .containsExactly(new ParticipantWaitlisted(session.id(), participant3));

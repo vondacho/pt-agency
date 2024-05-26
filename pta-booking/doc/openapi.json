@@ -1,7 +1,7 @@
 {
   "openapi" : "3.0.3",
   "info" : {
-    "title" : "Booking API",
+    "title" : "v API (test)",
     "description" : "Booking API",
     "termsOfService" : "Your terms here",
     "contact" : {

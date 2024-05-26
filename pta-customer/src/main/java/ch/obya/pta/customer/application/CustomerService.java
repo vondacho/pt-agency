@@ -81,10 +81,10 @@ public class CustomerService {
     }
 
     @Transactional
-    public Uni<Void> remove(CustomerId customerId) {
+    public Uni<Void> remove(CustomerId customerId, Boolean force) {
         return findOne(customerId)
-                .flatMap(c -> repository.remove(customerId))
-                .flatMap(c -> eventPublisher.publish(Set.of(new CustomerRemoved(customerId))));
+                .flatMap(c -> (force ? repository.remove(customerId) : repository.save(c.close())).replaceWith(c))
+                .flatMap(c -> eventPublisher.publish(force ? Set.of(new CustomerRemoved(customerId)) : c.domainEvents()));
     }
 
     public Uni<Customer> findOne(CustomerId id) {

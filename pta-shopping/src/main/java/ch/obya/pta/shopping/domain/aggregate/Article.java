@@ -59,6 +59,11 @@ public class Article extends BaseEntity<Article, ArticleId, Article.State> {
         return state.toBuilder().build();
     }
 
+    public Article close() {
+        state = state.toBuilder().validity(state.validity().closeNow()).build();
+        andEvent(new ArticleModified(id));
+        return this;
+    }
 
     public Article.Modifier modify() {
         return this.new Modifier();

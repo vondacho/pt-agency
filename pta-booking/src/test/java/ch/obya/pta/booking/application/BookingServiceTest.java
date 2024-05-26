@@ -127,7 +127,7 @@ public class BookingServiceTest {
     void booking_session_without_compatible_subscription_should_fail() {
         var session = Samples.onePrivateSession.get();
         var participant = Samples.oneParticipant.get();
-        var subscription = Samples.oneSubscription.get();
+        var subscription = Samples.oneYearlySubscription.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
@@ -146,7 +146,7 @@ public class BookingServiceTest {
     void booking_session_return_booking_entity_and_charge_subscription() {
         var session = Samples.onePrivateSession.get();
         var participant = Samples.oneParticipant.get();
-        var subscription = Samples.oneSubscription.get();
+        var subscription = Samples.oneYearlySubscription.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
@@ -173,11 +173,11 @@ public class BookingServiceTest {
     @Test
     void booking_full_session_return_one_booking_with_status_waiting() {
         var session = Samples.onePrivateSession.get();
-        session.book(Samples.oneParticipant.get(), Samples.oneSubscription.get().id());
+        session.book(Samples.oneParticipant.get(), Samples.oneYearlySubscription.get().id());
         session.domainEvents();
 
         var participant = Samples.oneParticipant.get();
-        var subscription = Samples.oneSubscription.get();
+        var subscription = Samples.oneYearlySubscription.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
@@ -203,7 +203,7 @@ public class BookingServiceTest {
     void cancelling_booking_credits_used_subscription() {
         var session = Samples.onePrivateSession.get();
         var participant = Samples.oneParticipant.get();
-        var subscription = Samples.oneSubscription.get();
+        var subscription = Samples.oneYearlySubscription.get();
         session.book(participant, subscription.id());
         session.domainEvents();
 

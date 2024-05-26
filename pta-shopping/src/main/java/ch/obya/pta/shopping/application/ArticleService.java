@@ -1,4 +1,4 @@
-package ch.obya.pta.shopping.domain.service;
+package ch.obya.pta.shopping.application;
 
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.entity.BaseEntity;
@@ -89,10 +89,10 @@ public class ArticleService {
     }
 
     @Transactional
-    public Uni<Void> remove(ArticleId articleId) {
+    public Uni<Void> remove(ArticleId articleId, Boolean force) {
         return findOne(articleId)
-                .flatMap(c -> repository.remove(articleId))
-                .flatMap(c -> eventPublisher.publish(Set.of(new ArticleRemoved(articleId))));
+                .flatMap(c -> (force ? repository.remove(articleId) : repository.save(c.close())).replaceWith(c))
+                .flatMap(c -> eventPublisher.publish(force ? Set.of(new ArticleRemoved(articleId)) : c.domainEvents()));
     }
 
     public Uni<Article> findOne(ArticleId id) {

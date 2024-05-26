@@ -43,7 +43,7 @@ public class Booking {
     Status status;
 
     public enum Status {
-        DONE, WAITING_LIST, PREBOOKED
+        DONE, WAITING, PREBOOKED
     }
 
     public static Booking done(SessionId session, ParticipantId participant, SubscriptionId subscription) {
@@ -55,7 +55,7 @@ public class Booking {
     }
 
     public static Booking waiting(SessionId session, ParticipantId participant, SubscriptionId subscription) {
-        return new Booking(new BookingId(session, participant), subscription, Status.WAITING_LIST);
+        return new Booking(new BookingId(session, participant), subscription, Status.WAITING);
     }
 
     public static Booking prebooked(SessionId session, ParticipantId participant, SubscriptionId subscription) {

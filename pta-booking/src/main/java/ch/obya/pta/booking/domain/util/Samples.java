@@ -28,7 +28,7 @@ public class Samples {
                 bookings);
     }
 
-    private static Subscription subscription() {
+    private static Subscription yearlySubscription() {
         var today = LocalDate.now();
         return new Subscription(
                 SubscriptionId.create(),
@@ -40,5 +40,5 @@ public class Samples {
     public static final Supplier<Session> oneSmallGroupSession = () -> session(2,5, Set.of());
     public static final Supplier<Session> oneCollectiveCourseSession = () -> session(3,20, Set.of());
     public static final Supplier<ParticipantId> oneParticipant = ParticipantId::create;
-    public static final Supplier<Subscription> oneSubscription = Samples::subscription;
+    public static final Supplier<Subscription> oneYearlySubscription = Samples::yearlySubscription;
 }

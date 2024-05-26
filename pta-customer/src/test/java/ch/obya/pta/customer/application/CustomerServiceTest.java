@@ -197,7 +197,7 @@ public class CustomerServiceTest {
         when(customerRepository.remove(customer.id())).thenReturn(Uni.createFrom().voidItem());
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
 
-        customerService.remove(customer.id()).subscribe().withSubscriber(UniAssertSubscriber.create()).getItem();
+        customerService.remove(customer.id(), true).subscribe().withSubscriber(UniAssertSubscriber.create()).getItem();
 
         verify(customerRepository, times(1)).findOne(customer.id());
         verify(customerRepository, times(1)).remove(customer.id());

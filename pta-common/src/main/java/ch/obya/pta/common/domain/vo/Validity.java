@@ -34,5 +34,9 @@ public record Validity(LocalDate from, LocalDate to) {
     public static Validity fromNow() {
         return new Validity(LocalDate.now(), null);
     }
+
+    public Validity closeNow() {
+        return closeOn(LocalDate.now());
+    }
 }
 
