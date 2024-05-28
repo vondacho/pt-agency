@@ -25,6 +25,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+        cache-dependency-path: 'pta-invoicing/pom.xml'
     - name: Build with Maven
       run: mvn -B package --file pta-invoicing/pom.xml
       env:
