@@ -1,4 +1,4 @@
-name: Build Shopping
+name: Build shopping
 
 on:
   push:

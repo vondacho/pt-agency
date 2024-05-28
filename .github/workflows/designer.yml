@@ -1,4 +1,4 @@
-name: Build Designer
+name: Build designer
 
 on:
   push:

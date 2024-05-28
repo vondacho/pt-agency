@@ -1,4 +1,4 @@
-name: Build Booking
+name: Build pta
 
 on:
   push:

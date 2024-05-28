@@ -1,4 +1,4 @@
-name: Build Customer
+name: Build customer
 
 on:
   push:
