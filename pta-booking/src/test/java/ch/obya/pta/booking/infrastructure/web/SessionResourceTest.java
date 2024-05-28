@@ -27,13 +27,18 @@ import ch.obya.pta.booking.application.BookingService;
 import ch.obya.pta.booking.domain.util.Samples;
 import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.SessionId;
+import ch.obya.pta.common.application.EventPublisher;
+import ch.obya.pta.common.domain.event.Event;
 import ch.obya.pta.common.domain.util.CommonProblem;
 import io.quarkus.test.InjectMock;
+import io.quarkus.test.Mock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.Uni;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.Map;
 
 import static ch.obya.pta.booking.domain.util.Samples.onePrivateSession;
@@ -48,6 +53,11 @@ public class SessionResourceTest {
 
     @InjectMock
     BookingService bookingService;
+
+    @Mock
+    EventPublisher eventPublisher() {
+        return events -> Uni.createFrom().voidItem();
+    }
 
     @Test
     void look_up_non_existing_session_resource_should_fail_with_404() {

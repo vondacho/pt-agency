@@ -26,11 +26,9 @@ package ch.obya.pta.common.infrastructure.messaging;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.event.Event;
 import io.smallrye.mutiny.Uni;
-import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Collection;
 
-@ApplicationScoped
 public class RdbmsEventPublisher implements EventPublisher {
     @Override
     public Uni<Void> publish(Collection<Event> events) {
