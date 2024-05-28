@@ -44,6 +44,14 @@
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/vondacho/pt-agency</url>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

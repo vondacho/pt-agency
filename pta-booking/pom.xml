@@ -9,12 +9,6 @@
   </parent>
   <artifactId>pta-booking</artifactId>
   <version>${booking.module.version}</version>
-  <repositories>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/obya/pta</url>
-    </repository>
-  </repositories>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
