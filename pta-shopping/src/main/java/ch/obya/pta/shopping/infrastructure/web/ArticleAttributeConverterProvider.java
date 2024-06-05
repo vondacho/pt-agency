@@ -3,12 +3,15 @@ package ch.obya.pta.shopping.infrastructure.web;
 import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
+import ch.obya.pta.shopping.domain.vo.Price;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
 import jakarta.ws.rs.ext.Provider;
 
+import javax.swing.text.NumberFormatter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.text.NumberFormat;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,7 +21,8 @@ public class ArticleAttributeConverterProvider implements ParamConverterProvider
     private final Map<Class, ParamConverter> converters = Map.of(
             ArticleId.class, new ArticleIdConverter(),
             Name.class, new NameConverter(),
-            Quota.class, new QuotaConverter()
+            Quota.class, new QuotaConverter(),
+            Price.class, new PriceConverter()
     );
 
     @SuppressWarnings("unchecked")
@@ -61,6 +65,18 @@ public class ArticleAttributeConverterProvider implements ParamConverterProvider
         @Override
         public String toString(Quota value) {
             return "%d,%d".formatted(value.min(), value.max());
+        }
+    }
+
+    private static class PriceConverter implements ParamConverter<Price> {
+        @Override
+        public Price fromString(String value) {
+            return new Price(Double.parseDouble(value));
+        }
+
+        @Override
+        public String toString(Price value) {
+            return value.toString();
         }
     }
 }

@@ -1,0 +1,376 @@
+---
+openapi: 3.0.3
+info:
+  title: Customer API
+  description: Customer API
+  termsOfService: Your terms here
+  contact:
+    name: Example API Support
+    url: https://ptagency.ch/contact
+    email: techsupport@ptagency.ch
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: Auto generated value
+- url: http://0.0.0.0:8080
+  description: Auto generated value
+paths:
+  /customers:
+    get:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerDto"
+    post:
+      tags:
+      - Customer Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerDto"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/CustomerId"
+  /customers/{id}:
+    get:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/CustomerDto"
+    put:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerDto"
+      responses:
+        "204":
+          description: No Content
+    delete:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      - name: force
+        in: query
+        schema:
+          type: boolean
+      responses:
+        "204":
+          description: No Content
+    patch:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      - name: billing
+        in: query
+        schema:
+          $ref: "#/components/schemas/PhysicalAddress"
+      - name: birthdate
+        in: query
+        schema:
+          $ref: "#/components/schemas/BirthDate"
+      - name: delivery
+        in: query
+        schema:
+          $ref: "#/components/schemas/PhysicalAddress"
+      - name: email
+        in: query
+        schema:
+          $ref: "#/components/schemas/EmailAddress"
+      - name: firstname
+        in: query
+        schema:
+          $ref: "#/components/schemas/Name"
+      - name: gender
+        in: query
+        schema:
+          $ref: "#/components/schemas/Gender"
+      - name: lastname
+        in: query
+        schema:
+          $ref: "#/components/schemas/Name"
+      - name: notes
+        in: query
+        schema:
+          type: string
+      - name: phone
+        in: query
+        schema:
+          $ref: "#/components/schemas/PhoneNumber"
+      responses:
+        "204":
+          description: No Content
+  /customers/{id}/connection:
+    put:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      - name: email
+        in: query
+        schema:
+          $ref: "#/components/schemas/EmailAddress"
+      - name: phone
+        in: query
+        schema:
+          $ref: "#/components/schemas/PhoneNumber"
+      responses:
+        "204":
+          description: No Content
+  /customers/{id}/definition:
+    put:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      - name: birthdate
+        in: query
+        schema:
+          $ref: "#/components/schemas/BirthDate"
+      - name: gender
+        in: query
+        schema:
+          $ref: "#/components/schemas/Gender"
+      responses:
+        "204":
+          description: No Content
+  /customers/{id}/location:
+    put:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      - name: billing
+        in: query
+        schema:
+          $ref: "#/components/schemas/PhysicalAddress"
+      - name: delivery
+        in: query
+        schema:
+          $ref: "#/components/schemas/PhysicalAddress"
+      responses:
+        "204":
+          description: No Content
+  /customers/{id}/naming:
+    put:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      - name: firstname
+        in: query
+        schema:
+          $ref: "#/components/schemas/Name"
+      - name: lastname
+        in: query
+        schema:
+          $ref: "#/components/schemas/Name"
+      responses:
+        "204":
+          description: No Content
+  /customers/{id}/subscriptions:
+    get:
+      tags:
+      - Customer Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/CustomerId"
+      - name: at
+        in: query
+        schema:
+          $ref: "#/components/schemas/LocalDate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionDto"
+components:
+  schemas:
+    ArticleId:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+    BirthDate:
+      type: object
+      properties:
+        date:
+          $ref: "#/components/schemas/LocalDate"
+    CustomerDto:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/CustomerId"
+        salutation:
+          type: string
+        firstName:
+          $ref: "#/components/schemas/Name"
+        lastName:
+          $ref: "#/components/schemas/Name"
+        birthDate:
+          $ref: "#/components/schemas/BirthDate"
+        gender:
+          $ref: "#/components/schemas/Gender"
+        deliveryAddress:
+          $ref: "#/components/schemas/PhysicalAddress"
+        billingAddress:
+          $ref: "#/components/schemas/PhysicalAddress"
+        emailAddress:
+          $ref: "#/components/schemas/EmailAddress"
+        phoneNumber:
+          $ref: "#/components/schemas/PhoneNumber"
+        notes:
+          type: string
+    CustomerId:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+    EmailAddress:
+      type: object
+      properties:
+        address:
+          type: string
+    Gender:
+      enum:
+      - MALE
+      - FEMALE
+      type: string
+    LocalDate:
+      format: date
+      type: string
+      example: 2022-03-10
+    Name:
+      type: object
+      properties:
+        content:
+          type: string
+    PhoneNumber:
+      type: object
+      properties:
+        number:
+          type: string
+    PhysicalAddress:
+      type: object
+      properties:
+        streetNo:
+          type: string
+        zip:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        country:
+          type: string
+    Quota:
+      type: object
+      properties:
+        min:
+          format: int32
+          type: integer
+        max:
+          format: int32
+          type: integer
+    SubscriptionDto:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/SubscriptionId"
+        articleId:
+          $ref: "#/components/schemas/ArticleId"
+        validity:
+          $ref: "#/components/schemas/Validity"
+        quota:
+          $ref: "#/components/schemas/Quota"
+        credits:
+          format: int32
+          type: integer
+    SubscriptionId:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+    UUID:
+      format: uuid
+      pattern: "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+      type: string
+    Validity:
+      type: object
+      properties:
+        from:
+          $ref: "#/components/schemas/LocalDate"
+        to:
+          $ref: "#/components/schemas/LocalDate"

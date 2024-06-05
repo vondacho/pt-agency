@@ -4,16 +4,17 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>ch.obya</groupId>
-    <artifactId>pta</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <artifactId>pta-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <relativePath>../pta-parent/pom.xml</relativePath>
   </parent>
   <artifactId>pta-booking</artifactId>
-  <version>${booking.module.version}</version>
+  <version>0.2.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>pta-common</artifactId>
-      <version>${common.module.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkiverse.quinoa</groupId>
@@ -42,6 +43,14 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-health</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
     <dependency>
       <groupId>com.tietoevry.quarkus</groupId>

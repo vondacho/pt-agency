@@ -5,11 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ch.obya</groupId>
-        <artifactId>pta</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <artifactId>pta-parent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../pta-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-common</artifactId>
-    <version>${common.module.version}</version>
+    <version>0.3.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
@@ -28,20 +30,20 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.jboss.jandex</groupId>
-                <artifactId>jandex-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <id>make-index</id>
-                        <goals>
-                            <!-- phase is 'process-classes by default' -->
-                            <goal>jandex</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.jboss.jandex</groupId>-->
+<!--                <artifactId>jandex-maven-plugin</artifactId>-->
+<!--                <version>1.2.1</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>make-index</id>-->
+<!--                        <goals>-->
+<!--                            &lt;!&ndash; phase is 'process-classes by default' &ndash;&gt;-->
+<!--                            <goal>jandex</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 </project>

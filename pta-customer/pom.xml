@@ -3,16 +3,17 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ch.obya</groupId>
-        <artifactId>pta</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <artifactId>pta-parent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../pta-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-customer</artifactId>
-    <version>${customer.module.version}</version>
+    <version>0.2.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>pta-common</artifactId>
-            <version>${common.module.version}</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.libphonenumber</groupId>

@@ -12,29 +12,48 @@
         <module>pta-shopping</module>
         <module>pta-customer</module>
         <module>pta-common</module>
+        <module>pta-bom</module>
+        <module>pta-build-config</module>
+        <module>pta-parent</module>
     </modules>
 
     <properties>
-        <common.module.version>0.3.0-SNAPSHOT</common.module.version>
-        <customer.module.version>0.2.1-SNAPSHOT</customer.module.version>
-        <booking.module.version>0.2.1-SNAPSHOT</booking.module.version>
-        <shopping.module.version>0.2.0-SNAPSHOT</shopping.module.version>
-        <invoicing.module.version>0.1.0-SNAPSHOT</invoicing.module.version>
-        <designer.module.version>0.1.0-SNAPSHOT</designer.module.version>
+        <!-- Plugin versions -->
+        <version.checkstyle.plugin>3.1.1</version.checkstyle.plugin>
+        <version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
+        <version.formatter.plugin>2.24.0</version.formatter.plugin>
+        <version.impsort.plugin>1.10.0</version.impsort.plugin>
+        <version.license.plugin>4.5</version.license.plugin>
+        <version.surfire.plugin>3.2.5</version.surfire.plugin>
 
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- Repos, URLs & protocols -->
+        <repo.scm.connection>git@github.com:vondacho/pt-agency</repo.scm.connection>
+        <repo.scm.url>https://github.com/vondacho/pt-agency</repo.scm.url>
 
-        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-        <quarkus.platform.version>3.11.0</quarkus.platform.version>
-
-        <skipITs>true</skipITs>
-        <surefire-plugin.version>3.2.5</surefire-plugin.version>
-        <compiler-plugin.version>3.13.0</compiler-plugin.version>
+        <!-- Build related -->
+        <encoding>UTF-8</encoding>
+        <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.min.version>3.2.5</maven.min.version>
+        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
     </properties>
+
+    <developers>
+        <developer>
+            <name>von Dach Olivier</name>
+            <id>vondacho</id>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:${repo.scm.connection}</connection>
+        <developerConnection>scm:git:${repo.scm.connection}</developerConnection>
+        <url>${repo.scm.url}</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <distributionManagement>
         <repository>
@@ -51,137 +70,6 @@
             <url>https://maven.pkg.github.com/vondacho/pt-agency</url>
         </repository>
     </repositories>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.quarkiverse.cucumber</groupId>
-                <artifactId>quarkus-cucumber</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>io.quarkiverse.quinoa</groupId>
-                <artifactId>quarkus-quinoa</artifactId>
-                <version>2.3.6</version>
-            </dependency>
-            <dependency>
-                <groupId>com.tietoevry.quarkus</groupId>
-                <artifactId>quarkus-resteasy-problem</artifactId>
-                <version>3.9.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.zalando</groupId>
-                <artifactId>problem</artifactId>
-                <version>0.27.1</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.24.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                            <goal>generate-code</goal>
-                            <goal>generate-code-tests</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${compiler-plugin.version}</version>
-                <configuration>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire-plugin.version}</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <maven.home>${maven.home}</maven.home>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${surefire-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <systemPropertyVariables>
-                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
-                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <maven.home>${maven.home}</maven.home>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-            <!--plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>2.4.0</version>
-                <configuration>
-                    <organizationName>obya</organizationName>
-                    <inceptionYear>2024</inceptionYear>
-                    <licenseName>agpl_v3</licenseName>
-                    <verbose>false</verbose>
-                    <addSvnKeyWords>true</addSvnKeyWords>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>first</id>
-                        <goals>
-                            <goal>update-file-header</goal>
-                        </goals>
-                        <phase>process-sources</phase>
-                        <configuration>
-                            <roots>
-                                <root>src/main/java</root>
-                                <root>src/main/resources</root>
-                                <root>src/test/java</root>
-                            </roots>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
-        </plugins>
-    </build>
 
     <profiles>
         <profile>

@@ -1,0 +1,264 @@
+---
+openapi: 3.0.3
+info:
+  title: Shopping API
+  description: Shopping API
+  termsOfService: Your terms here
+  contact:
+    name: Example API Support
+    url: https://ptagency.ch/contact
+    email: techsupport@ptagency.ch
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: http://localhost:8080
+  description: Auto generated value
+- url: http://0.0.0.0:8080
+  description: Auto generated value
+paths:
+  /articles:
+    get:
+      tags:
+      - Article Resource
+      parameters:
+      - name: filter
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArticleDto"
+    post:
+      tags:
+      - Article Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleDto"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ArticleId"
+  /articles/{id}:
+    get:
+      tags:
+      - Article Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/ArticleId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ArticleDto"
+    put:
+      tags:
+      - Article Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/ArticleId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleDto"
+      responses:
+        "204":
+          description: No Content
+    delete:
+      tags:
+      - Article Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/ArticleId"
+      - name: force
+        in: query
+        schema:
+          type: boolean
+      responses:
+        "204":
+          description: No Content
+    patch:
+      tags:
+      - Article Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/ArticleId"
+      - name: description
+        in: query
+        schema:
+          $ref: "#/components/schemas/Text"
+      - name: grants
+        in: query
+        schema:
+          type: string
+      - name: name
+        in: query
+        schema:
+          $ref: "#/components/schemas/Name"
+      - name: price
+        in: query
+        schema:
+          $ref: "#/components/schemas/Price"
+      - name: profile
+        in: query
+        schema:
+          type: string
+      - name: quota
+        in: query
+        schema:
+          $ref: "#/components/schemas/Quota"
+      - name: validFrom
+        in: query
+        schema:
+          $ref: "#/components/schemas/LocalDate"
+      - name: validTo
+        in: query
+        schema:
+          $ref: "#/components/schemas/LocalDate"
+      responses:
+        "204":
+          description: No Content
+  /articles/{id}/naming:
+    put:
+      tags:
+      - Article Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/ArticleId"
+      - name: description
+        in: query
+        schema:
+          $ref: "#/components/schemas/Text"
+      - name: name
+        in: query
+        schema:
+          $ref: "#/components/schemas/Name"
+      responses:
+        "204":
+          description: No Content
+  /articles/{id}/subscriptions:
+    get:
+      tags:
+      - Article Resource
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/ArticleId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/problem+json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArticleId"
+components:
+  schemas:
+    ArticleDto:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ArticleId"
+        name:
+          $ref: "#/components/schemas/Name"
+        description:
+          $ref: "#/components/schemas/Text"
+        validity:
+          $ref: "#/components/schemas/Validity"
+        price:
+          $ref: "#/components/schemas/Price"
+        profile:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+        grants:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+        quota:
+          $ref: "#/components/schemas/Quota"
+    ArticleId:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+    LocalDate:
+      format: date
+      type: string
+      example: 2022-03-10
+    Name:
+      type: object
+      properties:
+        content:
+          type: string
+    Price:
+      type: object
+      properties:
+        value:
+          format: double
+          type: number
+    Quota:
+      type: object
+      properties:
+        min:
+          format: int32
+          type: integer
+        max:
+          format: int32
+          type: integer
+    Tag:
+      type: object
+      properties:
+        name:
+          type: string
+    Text:
+      type: object
+      properties:
+        content:
+          type: string
+    UUID:
+      format: uuid
+      pattern: "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+      type: string
+    Validity:
+      type: object
+      properties:
+        from:
+          $ref: "#/components/schemas/LocalDate"
+        to:
+          $ref: "#/components/schemas/LocalDate"

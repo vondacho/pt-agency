@@ -1,7 +1,8 @@
 package ch.obya.pta.common.util;
 
-import ch.obya.pta.common.util.search.FindCriteria;
 import org.junit.jupiter.api.Test;
+
+import ch.obya.pta.common.util.search.FindCriteria;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

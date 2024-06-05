@@ -1,10 +1,10 @@
 package ch.obya.pta.common.domain.util;
 
+import java.util.function.Supplier;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
-
-import java.util.function.Supplier;
 
 public interface Problem {
 

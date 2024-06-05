@@ -1,0 +1,42 @@
+name: ci-common
+
+on:
+  push:
+    paths:
+      - 'pta-common/**'
+    tags:
+      - 'pta-common/v*.*.*'
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          cache-dependency-path: 'pta-common/pom.xml'
+
+      - name: Build with Maven
+        run: mvn -B package --file pta-common/pom.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to GitHub Packages
+        if: startsWith(github.ref, 'refs/tags/pta-common/')
+        run: mvn -B deploy --file pta-common/pom.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
