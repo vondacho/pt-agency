@@ -1,5 +1,18 @@
 package ch.obya.pta.booking.application;
 
+import java.util.Collection;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.event.*;
@@ -11,18 +24,6 @@ import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.event.Event;
 import ch.obya.pta.common.domain.util.CommonProblem;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

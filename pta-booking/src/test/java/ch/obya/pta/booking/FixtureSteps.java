@@ -1,8 +1,9 @@
 package ch.obya.pta.booking;
 
-import ch.obya.pta.booking.domain.util.Samples;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+
+import ch.obya.pta.booking.domain.util.Samples;
 
 import static ch.obya.pta.booking.TestContext.set;
 

@@ -1,5 +1,20 @@
 package ch.obya.pta.booking.infrastructure.web;
 
+import java.time.LocalDate;
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+
+import org.jboss.resteasy.reactive.ResponseStatus;
+import org.jboss.resteasy.reactive.RestQuery;
+import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
+
+import io.quarkus.resteasy.reactive.links.InjectRestLinks;
+import io.quarkus.resteasy.reactive.links.RestLink;
+import io.quarkus.resteasy.reactive.links.RestLinkType;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 
 import ch.obya.pta.booking.application.BookingService;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
@@ -7,19 +22,6 @@ import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
 import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.common.util.search.FindCriteria;
-import io.quarkus.resteasy.reactive.links.InjectRestLinks;
-import io.quarkus.resteasy.reactive.links.RestLink;
-import io.quarkus.resteasy.reactive.links.RestLinkType;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import org.jboss.resteasy.reactive.ResponseStatus;
-import org.jboss.resteasy.reactive.RestQuery;
-import org.zalando.problem.Problem;
-import org.zalando.problem.Status;
-
-import java.time.LocalDate;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 

@@ -1,6 +1,5 @@
 package ch.obya.pta.booking.domain.entity;
 
-
 import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
 import ch.obya.pta.booking.domain.vo.SessionId;

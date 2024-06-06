@@ -1,15 +1,15 @@
 package ch.obya.pta.booking.domain;
 
+import java.time.Duration;
+import java.time.LocalTime;
+
+import org.junit.jupiter.api.Test;
 
 import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.event.*;
+import ch.obya.pta.booking.domain.util.Samples;
 import ch.obya.pta.booking.domain.vo.*;
 import ch.obya.pta.common.domain.vo.Quota;
-import ch.obya.pta.booking.domain.util.Samples;
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;

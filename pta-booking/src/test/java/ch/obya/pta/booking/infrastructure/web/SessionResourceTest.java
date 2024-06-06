@@ -1,5 +1,14 @@
 package ch.obya.pta.booking.infrastructure.web;
 
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.Mock;
+import io.quarkus.test.common.http.TestHTTPEndpoint;
+import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.mutiny.Uni;
 
 import ch.obya.pta.booking.application.BookingService;
 import ch.obya.pta.booking.domain.util.Samples;
@@ -7,14 +16,6 @@ import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.util.CommonProblem;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.Mock;
-import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.junit.QuarkusTest;
-import io.smallrye.mutiny.Uni;
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static ch.obya.pta.booking.domain.util.Samples.onePrivateSession;
 import static io.restassured.RestAssured.given;

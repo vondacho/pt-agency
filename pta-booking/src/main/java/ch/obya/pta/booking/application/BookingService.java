@@ -1,5 +1,18 @@
 package ch.obya.pta.booking.application;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.tuples.Tuple2;
 
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.entity.Booking;
@@ -11,19 +24,7 @@ import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.event.Event;
 import ch.obya.pta.common.domain.util.CommonProblem;
 import ch.obya.pta.common.domain.util.EntityFinder;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.tuples.Tuple2;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 @ApplicationScoped
 @RequiredArgsConstructor

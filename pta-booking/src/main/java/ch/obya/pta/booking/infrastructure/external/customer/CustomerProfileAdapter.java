@@ -1,19 +1,21 @@
 package ch.obya.pta.booking.infrastructure.external.customer;
 
+import java.time.LocalDate;
 
-import ch.obya.pta.booking.application.CustomerProfile;
-import ch.obya.pta.booking.domain.vo.ParticipantId;
-import ch.obya.pta.booking.domain.vo.Subscription;
-import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 
-import java.time.LocalDate;
+import io.smallrye.mutiny.Multi;
+
+import ch.obya.pta.booking.application.CustomerProfile;
+import ch.obya.pta.booking.domain.vo.ParticipantId;
+import ch.obya.pta.booking.domain.vo.Subscription;
 
 @ApplicationScoped
 public class CustomerProfileAdapter implements CustomerProfile {

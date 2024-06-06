@@ -1,15 +1,17 @@
 package ch.obya.pta.booking.infrastructure.external.shopping;
 
-
-import ch.obya.pta.booking.application.ArticleStore;
-import ch.obya.pta.booking.domain.vo.ArticleId;
-import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestPath;
+
+import io.smallrye.mutiny.Multi;
+
+import ch.obya.pta.booking.application.ArticleStore;
+import ch.obya.pta.booking.domain.vo.ArticleId;
 
 @ApplicationScoped
 public class ArticleStoreAdapter implements ArticleStore {

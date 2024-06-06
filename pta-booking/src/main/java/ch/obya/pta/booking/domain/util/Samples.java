@@ -1,5 +1,11 @@
 package ch.obya.pta.booking.domain.util;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
+import java.util.function.Supplier;
+
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.vo.*;
@@ -7,12 +13,6 @@ import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.vo.Validity;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Set;
-import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Samples {

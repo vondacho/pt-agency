@@ -1,6 +1,5 @@
 package ch.obya.pta.booking.domain.util;
 
-
 import ch.obya.pta.common.domain.util.Problem;
 import lombok.AccessLevel;
 import lombok.Getter;

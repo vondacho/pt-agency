@@ -1,9 +1,10 @@
 package ch.obya.pta.booking;
 
+import io.cucumber.java.en.When;
+
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
 import ch.obya.pta.booking.domain.vo.Subscription;
-import io.cucumber.java.en.When;
 
 import static ch.obya.pta.booking.TestContext.at;
 

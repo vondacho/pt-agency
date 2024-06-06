@@ -1,15 +1,16 @@
 package ch.obya.pta.booking.infrastructure.web;
 
-import ch.obya.pta.booking.domain.vo.ParticipantId;
-import ch.obya.pta.booking.domain.vo.SessionId;
-import jakarta.ws.rs.ext.ParamConverter;
-import jakarta.ws.rs.ext.ParamConverterProvider;
-import jakarta.ws.rs.ext.Provider;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.UUID;
+
+import jakarta.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverterProvider;
+import jakarta.ws.rs.ext.Provider;
+
+import ch.obya.pta.booking.domain.vo.ParticipantId;
+import ch.obya.pta.booking.domain.vo.SessionId;
 
 @Provider
 public class SessionAttributeConverterProvider implements ParamConverterProvider {

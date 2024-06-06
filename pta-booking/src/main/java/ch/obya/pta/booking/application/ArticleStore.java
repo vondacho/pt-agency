@@ -1,8 +1,8 @@
 package ch.obya.pta.booking.application;
 
+import io.smallrye.mutiny.Multi;
 
 import ch.obya.pta.booking.domain.vo.ArticleId;
-import io.smallrye.mutiny.Multi;
 
 public interface ArticleStore {
 

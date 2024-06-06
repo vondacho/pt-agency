@@ -1,9 +1,10 @@
 package ch.obya.pta.booking;
 
+import io.cucumber.java.en.Then;
+
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
-import io.cucumber.java.en.Then;
 
 import static ch.obya.pta.booking.TestContext.at;
 import static org.assertj.core.api.Assertions.assertThat;
