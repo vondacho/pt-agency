@@ -4,16 +4,17 @@
     <parent>
         <groupId>ch.obya</groupId>
         <artifactId>pta-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0</version>
         <relativePath>../pta-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-shopping</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>pta-common</artifactId>
+            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.quinoa</groupId>
