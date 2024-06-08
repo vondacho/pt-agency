@@ -1,4 +1,4 @@
-name: cd-docker-registry-listener
+name: cd-ghcr-listener
 
 on:
   registry_package:
@@ -6,9 +6,7 @@ on:
 
 jobs:
   react_to_registry_events:
-    if: ${{ github.event.registry_package.package_version.container_metadata.tag.name != '' }}
     runs-on: ubuntu-latest
-
     steps:
       - name: Handle Docker Push Event
         run: |
