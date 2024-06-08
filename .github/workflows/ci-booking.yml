@@ -13,7 +13,7 @@ on:
 env:
   MODULE_NAME: pta-booking
   DOCKER_REGISTRY: ghcr.io
-  DOCKER_IMAGE_NAME: ${{ github.repository }}/pta-booking
+  DOCKER_IMAGE_NAME: pt-agency/pta-booking
 
 jobs:
   build:
@@ -71,7 +71,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '${{ env.MODULE_NAME }}')
       uses: docker/build-push-action@v4
       with:
-        context: '/home/runner/work/${{ github.repository }}/${{ github.repository }}/${{ env.MODULE_NAME }}'
+        context: '/home/runner/work/pt-agency/pt-agency/${{ env.MODULE_NAME }}'
         file: '${{ env.MODULE_NAME }}/src/main/docker/Dockerfile.jvm'
         push: true
         tags: ${{ steps.meta.outputs.tags }}
