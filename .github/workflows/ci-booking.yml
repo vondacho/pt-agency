@@ -33,7 +33,7 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-        cache: maven
+        cache: 'maven'
         cache-dependency-path: 'pta-booking/pom.xml'
 
     - name: Build with Maven
