@@ -63,7 +63,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
-        file: 'pta-booking/src/main/docker/Dockerfile.jvm'
+        file: 'pta-booking/src/main/docker/Dockerfile.jvm-ci'
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
