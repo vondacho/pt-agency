@@ -55,7 +55,8 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: ${{ github.ref }}
+        tags: |
+          type=semver,pattern={{raw}}
 
     - name: Build and push Docker image
       if: startsWith(github.ref, 'refs/tags/pta-booking/')
