@@ -13,7 +13,7 @@ on:
 env:
   MODULE_NAME: pta-booking
   DOCKER_REGISTRY: ghcr.io
-  DOCKER_IMAGE_NAME: pt-agency/pta-booking
+  DOCKER_IMAGE_NAME: ${{ github.repository }}/pta-booking
 
 jobs:
   build:
