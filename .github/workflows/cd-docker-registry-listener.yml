@@ -1,0 +1,17 @@
+name: Docker Registry Listener
+
+on:
+  registry_package:
+    types: [ published ]
+
+jobs:
+  react_to_registry_events:
+    if: ${{ github.event.registry_package.package_version.container_metadata.tag.name != '' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Handle Docker Push Event
+        run: |
+          echo "Registry package event detected for ${{ github.event.registry_package.registry.name }}/${{ github.event.registry_package.name }}"
+          echo "Docker image ${{ github.event.registry_package.name }}:${{ github.event.registry_package.package_version.container_metadata.tag.name }} has been pushed to the registry"
+          echo "The image digest is ${{ github.event.registry_package.package_version.container_metadata.digest }}"
