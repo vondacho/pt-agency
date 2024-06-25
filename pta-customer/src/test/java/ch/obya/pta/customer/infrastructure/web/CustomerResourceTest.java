@@ -18,8 +18,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static ch.obya.pta.customer.domain.util.Samples.oneCustomer;
-import static ch.obya.pta.customer.domain.util.Samples.oneCustomerWithOneYearSubscription;
+import static ch.obya.pta.customer.domain.util.Samples.*;
 import static io.restassured.RestAssured.given;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,19 +106,19 @@ class CustomerResourceTest {
         verify(customerService).create(personCaptor.capture(), any(), any(), any(), any(), any());
         assertThat(personCaptor.getValue().firstName()).isEqualTo(dto.firstName());
         assertThat(personCaptor.getValue().lastName()).isEqualTo(dto.lastName());
-        assertThat(personCaptor.getValue().birthDate()).isEqualTo(dto.birthDate());
+        assertThat(personCaptor.getValue().birth()).isEqualTo(dto.birth());
         assertThat(personCaptor.getValue().gender()).isEqualTo(dto.gender());
     }
 
     @Test
-    void modify_existing_customer_resource_should_succeed_with_204() {
+    void replace_existing_customer_resource_should_succeed_with_204() {
         var customer = oneCustomer.get();
         when(customerService.modify(any(), any())).thenReturn(Uni.createFrom().voidItem());
 
         var dto = new CustomerDto.Builder()
                 .firstName(new Name("albert"))
                 .lastName(new Name("einstein"))
-                .birthDate(new Person.BirthDate(LocalDate.of(1958, 12, 12)))
+                .birth(new Person.Birth(LocalDate.of(1958, 12, 12)))
                 .gender(Person.Gender.MALE)
                 .build();
 
@@ -134,19 +133,19 @@ class CustomerResourceTest {
 
         verifyModifier(customer, m -> {
             verify(m).rename(new Name("albert"), new Name("einstein"));
-            verify(m).redefine(new Person.BirthDate(LocalDate.of(1958, 12, 12)), Person.Gender.MALE);
+            verify(m).redefine(new Person.Birth(LocalDate.of(1958, 12, 12)), Person.Gender.MALE);
         });
     }
 
     @Test
-    void partly_modify_existing_customer_resource_should_succeed_with_204() {
-        var customer = oneCustomer.get();
+    void partly_update_existing_customer_resource_should_succeed_with_204() {
+        var customer = johnDoe();
         when(customerService.modify(any(), any())).thenReturn(Uni.createFrom().voidItem());
 
         given()
                 .when()
                 .queryParams("firstName", "albert", "lastName", "einstein")
-                .queryParams("birthDate", "1958-12-12", "gender", "MALE")
+                .queryParams("birth", "1958-12-12", "gender", "MALE")
                 .patch("/{id}", Map.of("id", customer.id().id()))
                 .then()
                 .log().all()
@@ -154,7 +153,7 @@ class CustomerResourceTest {
 
         verifyModifier(customer, m -> {
             verify(m).rename(new Name("albert"), new Name("einstein"));
-            verify(m).redefine(new Person.BirthDate(LocalDate.of(1958, 12, 12)), Person.Gender.MALE);
+            verify(m).redefine(new Person.Birth(LocalDate.of(1958, 12, 12)), Person.Gender.MALE);
         });
     }
 
@@ -166,7 +165,7 @@ class CustomerResourceTest {
         given()
                 .when()
                 .queryParams("firstName", "albert", "lastName", "einstein")
-                .put("/{id}/naming", Map.of("id", customer.id().id()))
+                .patch("/{id}/naming", Map.of("id", customer.id().id()))
                 .then()
                 .log().all()
                 .statusCode(204);
@@ -182,14 +181,14 @@ class CustomerResourceTest {
 
         given()
                 .when()
-                .queryParams("birthDate", "1958-12-12", "gender", "MALE")
-                .put("/{id}/definition", Map.of("id", customer.id().id()))
+                .queryParams("birth", "1958-12-12", "gender", "MALE")
+                .patch("/{id}/definition", Map.of("id", customer.id().id()))
                 .then()
                 .log().all()
                 .statusCode(204);
 
         verifyModifier(customer, m -> verify(m)
-                .redefine(new Person.BirthDate(LocalDate.of(1958, 12,12)), Person.Gender.MALE));
+                .redefine(new Person.Birth(LocalDate.of(1958, 12,12)), Person.Gender.MALE));
     }
 
     @Test
@@ -200,7 +199,7 @@ class CustomerResourceTest {
         given()
                 .when()
                 .queryParams("email", "albert@einstein.com", "phone", "+33123456789")
-                .put("/{id}/connection", Map.of("id", customer.id().id()))
+                .patch("/{id}/connection", Map.of("id", customer.id().id()))
                 .then()
                 .log().all()
                 .statusCode(204);
@@ -217,7 +216,7 @@ class CustomerResourceTest {
         given()
                 .when()
                 .queryParams("delivery", "Bakerstreet 22,89000,London,London,UK")
-                .put("/{id}/location", Map.of("id", customer.id().id()))
+                .patch("/{id}/location", Map.of("id", customer.id().id()))
                 .then()
                 .log().all()
                 .statusCode(204);

@@ -1,0 +1,10 @@
+quarkus:
+  log:
+    level: INFO
+    category:
+      org.hibernate.sql: DEBUG
+  hibernate-orm:
+    log:
+      sql: true
+    database:
+      generation: drop-and-create

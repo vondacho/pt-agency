@@ -74,7 +74,7 @@ public class CustomerServiceTest {
     void create_customer_should_persist_and_publish_and_return_expected_id() {
         var template = Samples.oneCustomer.get().state();
 
-        when(customerRepository.findByCriteria(anyCollection())).thenReturn(Multi.createFrom().iterable(Collections.emptyList()));
+        when(customerRepository.findByCriteria(anyMap())).thenReturn(Uni.createFrom().item(Collections.emptyList()));
         when(customerRepository.save(any()))
                 .thenAnswer(invocation -> Uni.createFrom().item(invocation.getArgument(0, Customer.class)));
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
@@ -101,8 +101,7 @@ public class CustomerServiceTest {
     void create_duplicate_customer_should_fail() {
         var template = Samples.oneCustomer.get().state();
 
-        when(customerRepository.findByCriteria(anyCollection())).thenReturn(
-                Multi.createFrom().iterable(List.of(Samples.oneCustomer.get())));
+        when(customerRepository.findByCriteria(anyMap())).thenReturn(Uni.createFrom().item(List.of(Samples.oneCustomer.get())));
 
         var result = customerService.create(
                 template.person(),
@@ -118,7 +117,7 @@ public class CustomerServiceTest {
                         "Customer (%s,%s,%s,%s) already exists.".formatted(
                                 template.person().firstName(),
                                 template.person().lastName(),
-                                template.person().birthDate(),
+                                template.person().birth(),
                                 template.emailAddress()));
     }
 
@@ -127,7 +126,7 @@ public class CustomerServiceTest {
         var customer = Samples.oneCustomer.get();
 
         when(customerRepository.findOne(customer.id())).thenReturn(Uni.createFrom().item(customer));
-        when(customerRepository.findByCriteria(anyCollection())).thenReturn(Multi.createFrom().iterable(Collections.emptyList()));
+        when(customerRepository.findByCriteria(anyMap())).thenReturn(Uni.createFrom().item(Collections.emptyList()));
         when(customerRepository.save(any()))
                 .thenAnswer(invocation -> Uni.createFrom().item(invocation.getArgument(0, Customer.class)));
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
@@ -152,8 +151,7 @@ public class CustomerServiceTest {
         var state = customer.state();
 
         when(customerRepository.findOne(customer.id())).thenReturn(Uni.createFrom().item(customer));
-        when(customerRepository.findByCriteria(anyCollection())).thenReturn(
-                Multi.createFrom().iterable(List.of(Samples.oneCustomer.get())));
+        when(customerRepository.findByCriteria(anyMap())).thenReturn(Uni.createFrom().item(List.of(Samples.oneCustomer.get())));
 
         var result = customerService.modify(customer.id(), m -> m.annotate("modified").done());
 
@@ -163,7 +161,7 @@ public class CustomerServiceTest {
                         "Customer (%s,%s,%s,%s) already exists.".formatted(
                                 state.person().firstName(),
                                 state.person().lastName(),
-                                state.person().birthDate(),
+                                state.person().birth(),
                                 state.emailAddress()));
     }
 

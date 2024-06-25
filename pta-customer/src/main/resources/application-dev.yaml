@@ -1,0 +1,9 @@
+quarkus:
+  management:
+    host: localhost
+  smallrye-openapi:
+    info-title: Customer API (development)
+  hibernate-orm:
+    database:
+      generation: drop-and-create
+
