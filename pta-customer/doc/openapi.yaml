@@ -23,10 +23,42 @@ paths:
       tags:
       - Customer Resource
       parameters:
-      - name: filter
+      - name: birth
         in: query
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+      - name: email
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+      - name: firstname
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+      - name: gender
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+      - name: lastname
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+      - name: phone
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
       responses:
         "200":
           description: OK
@@ -114,10 +146,10 @@ paths:
         in: query
         schema:
           $ref: "#/components/schemas/PhysicalAddress"
-      - name: birthdate
+      - name: birth
         in: query
         schema:
-          $ref: "#/components/schemas/BirthDate"
+          $ref: "#/components/schemas/Birth"
       - name: delivery
         in: query
         schema:
@@ -150,7 +182,7 @@ paths:
         "204":
           description: No Content
   /customers/{id}/connection:
-    put:
+    patch:
       tags:
       - Customer Resource
       parameters:
@@ -171,7 +203,7 @@ paths:
         "204":
           description: No Content
   /customers/{id}/definition:
-    put:
+    patch:
       tags:
       - Customer Resource
       parameters:
@@ -180,10 +212,10 @@ paths:
         required: true
         schema:
           $ref: "#/components/schemas/CustomerId"
-      - name: birthdate
+      - name: birth
         in: query
         schema:
-          $ref: "#/components/schemas/BirthDate"
+          $ref: "#/components/schemas/Birth"
       - name: gender
         in: query
         schema:
@@ -192,7 +224,7 @@ paths:
         "204":
           description: No Content
   /customers/{id}/location:
-    put:
+    patch:
       tags:
       - Customer Resource
       parameters:
@@ -213,7 +245,7 @@ paths:
         "204":
           description: No Content
   /customers/{id}/naming:
-    put:
+    patch:
       tags:
       - Customer Resource
       parameters:
@@ -263,7 +295,7 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/UUID"
-    BirthDate:
+    Birth:
       type: object
       properties:
         date:
@@ -279,17 +311,17 @@ components:
           $ref: "#/components/schemas/Name"
         lastName:
           $ref: "#/components/schemas/Name"
-        birthDate:
-          $ref: "#/components/schemas/BirthDate"
+        birth:
+          $ref: "#/components/schemas/Birth"
         gender:
           $ref: "#/components/schemas/Gender"
-        deliveryAddress:
+        delivery:
           $ref: "#/components/schemas/PhysicalAddress"
-        billingAddress:
+        billing:
           $ref: "#/components/schemas/PhysicalAddress"
-        emailAddress:
+        email:
           $ref: "#/components/schemas/EmailAddress"
-        phoneNumber:
+        phone:
           $ref: "#/components/schemas/PhoneNumber"
         notes:
           type: string

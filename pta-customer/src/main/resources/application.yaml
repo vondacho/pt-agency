@@ -1,0 +1,27 @@
+quarkus:
+  datasource:
+    password: connor
+    username: sarah
+    db-kind: postgresql
+  management:
+    enabled: true
+    port: 9000
+  quinoa:
+    package-manager-install: true
+    package-manager-install:
+      node-version: 20.10.0
+  smallrye-openapi:
+    info-contact-email: techsupport@ptagency.ch
+    info-contact-name: Example API Support
+    info-contact-url: https://ptagency.ch/contact
+    info-description: Customer API
+    info-license-name: Apache 2.0
+    info-license-url: https://www.apache.org/licenses/LICENSE-2.0.html
+    info-terms-of-service: Your terms here
+    info-title: Customer API
+    info-version: 1.0.0
+    store-schema-directory: ./doc
+  swagger-ui:
+    always-include: true
+  jackson:
+    serialization-inclusion: non-null

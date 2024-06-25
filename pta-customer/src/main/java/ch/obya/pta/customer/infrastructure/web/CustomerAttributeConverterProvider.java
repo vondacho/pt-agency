@@ -1,7 +1,5 @@
 package ch.obya.pta.customer.infrastructure.web;
 
-import ch.obya.pta.common.domain.vo.Name;
-import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.customer.domain.vo.*;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
@@ -9,23 +7,18 @@ import jakarta.ws.rs.ext.Provider;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
-
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 @Provider
 public class CustomerAttributeConverterProvider implements ParamConverterProvider {
 
     private final Map<Class, ParamConverter> converters = Map.of(
             CustomerId.class, new CustomerIdConverter(),
-            Name.class, new NameConverter(),
-            Person.BirthDate.class, new BirthDateConverter(),
+            Person.Birth.class, new BirthDateConverter(),
             EmailAddress.class, new EmailAddressConverter(),
             PhoneNumber.class, new PhoneNumberConverter(),
-            PhysicalAddress.class, new PhysicalAddressConverter(),
-            Quota.class, new QuotaConverter()
+            PhysicalAddress.class, new PhysicalAddressConverter()
     );
 
     @SuppressWarnings("unchecked")
@@ -34,15 +27,15 @@ public class CustomerAttributeConverterProvider implements ParamConverterProvide
         return converters.getOrDefault(aClass, null);
     }
 
-    private static class BirthDateConverter implements ParamConverter<Person.BirthDate> {
+    private static class BirthDateConverter implements ParamConverter<Person.Birth> {
         @Override
-        public Person.BirthDate fromString(String value) {
-            return new Person.BirthDate(LocalDate.parse(value, ISO_LOCAL_DATE));
+        public Person.Birth fromString(String value) {
+            return Person.Birth.fromISO(value);
         }
 
         @Override
-        public String toString(Person.BirthDate value) {
-            return ISO_LOCAL_DATE.format(value.date());
+        public String toString(Person.Birth value) {
+            return value.toISO();
         }
     }
 
@@ -70,18 +63,6 @@ public class CustomerAttributeConverterProvider implements ParamConverterProvide
         }
     }
 
-    private static class NameConverter implements ParamConverter<Name> {
-        @Override
-        public Name fromString(String value) {
-            return new Name(value);
-        }
-
-        @Override
-        public String toString(Name value) {
-            return value.content();
-        }
-    }
-
     private static class PhoneNumberConverter implements ParamConverter<PhoneNumber> {
         @Override
         public PhoneNumber fromString(String value) {
@@ -104,19 +85,6 @@ public class CustomerAttributeConverterProvider implements ParamConverterProvide
         @Override
         public String toString(PhysicalAddress value) {
             return "%s,%s,%s,%s,%s".formatted(value.streetNo(), value.zip(), value.city(), value.region(), value.country());
-        }
-    }
-
-    private static class QuotaConverter implements ParamConverter<Quota> {
-        @Override
-        public Quota fromString(String value) {
-            var fields = value.split(",");
-            return new Quota(Integer.valueOf(fields[0]), Integer.valueOf(fields[1]));
-        }
-
-        @Override
-        public String toString(Quota value) {
-            return "%d,%d".formatted(value.min(), value.max());
         }
     }
 }

@@ -35,8 +35,8 @@ public class Customer extends BaseEntity<Customer, CustomerId, Customer.State> {
 
         public State {
             ifNullThrow(person, CommonProblem.AttributeNotNull.toException("Customer.person"));
-            ifNullThrow(person, CommonProblem.AttributeNotNull.toException("Customer.emailAddress"));
-            ifNullThrow(person, CommonProblem.AttributeNotNull.toException("Customer.phoneNumber"));
+            ifNullThrow(person, CommonProblem.AttributeNotNull.toException("Customer.email"));
+            ifNullThrow(person, CommonProblem.AttributeNotNull.toException("Customer.phone"));
         }
     }
 
@@ -122,8 +122,8 @@ public class Customer extends BaseEntity<Customer, CustomerId, Customer.State> {
             return this;
         }
 
-        public Modifier redefine(Person.BirthDate birthDate, Person.Gender gender) {
-            if (birthDate != null) personBuilder.birthDate(birthDate);
+        public Modifier redefine(Person.Birth birth, Person.Gender gender) {
+            if (birth != null) personBuilder.birth(birth);
             if (gender != null) personBuilder.gender(gender);
             return this;
         }
