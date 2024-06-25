@@ -1,20 +1,19 @@
 package ch.obya.pta.common.domain.repository;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.function.BiFunction;
-
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-
 import ch.obya.pta.common.domain.entity.BaseEntity;
 import ch.obya.pta.common.domain.entity.Entity;
 import ch.obya.pta.common.domain.vo.Identity;
-import ch.obya.pta.common.util.search.FindCriteria;
+import ch.obya.pta.common.util.search.AttributeFilter;
+import io.smallrye.mutiny.Uni;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 import static java.util.stream.Collectors.toList;
 
@@ -36,14 +35,19 @@ public class InMemoryKeyValueRepository<E extends Entity<E, I, S>, I extends Ide
     }
 
     @Override
-    public Multi<E> findByCriteria(Collection<FindCriteria> criteria) {
-        return Multi.createFrom().iterable(store.entrySet().stream().map(e -> entityCreator.apply(e.getKey(), e.getValue())).collect(toList()));
+    public Uni<List<E>> findByCriteria(Map<String, List<AttributeFilter>> criteria) {
+        return findAll();
     }
 
     @Override
-    public Uni<E> save(I id, S state) {
+    public Uni<List<E>> findAll() {
+        return Uni.createFrom().item(store.entrySet().stream().map(e -> entityCreator.apply(e.getKey(), e.getValue())).collect(toList()));
+    }
+
+    @Override
+    public Uni<I> save(I id, S state) {
         store.put(id, state);
-        return Uni.createFrom().item(entityCreator.apply(id, state));
+        return Uni.createFrom().item(entityCreator.apply(id, state)).map(Entity::id);
     }
 
     @Override
