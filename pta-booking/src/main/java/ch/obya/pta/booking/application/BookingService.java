@@ -88,14 +88,15 @@ public class BookingService {
 
     private Uni<Booking> makeBooking(Session session, ParticipantId participant, SubscriptionId subscriptionId) {
         return Uni.createFrom()
-                .item(session.book(participant, subscriptionId))
-                .invoke(() -> sessionRepository.save(session));
+                .item(() -> session.book(participant, subscriptionId))
+                .call(() -> sessionRepository.save(session));
     }
 
     private Uni<Void> cancelBooking(Session session, ParticipantId participant) {
         return Uni.createFrom().voidItem()
                 .invoke(() -> session.cancel(participant))
-                .invoke(() -> sessionRepository.save(session));
+                .call(() -> sessionRepository.save(session))
+                .replaceWithVoid();
     }
 
     private Uni<Void> notify(Collection<Event> events) {

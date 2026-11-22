@@ -23,6 +23,10 @@ public class Booking {
         DONE, WAITING, PREBOOKED
     }
 
+    public static Booking of(BookingId id, SubscriptionId subscription, Status status) {
+        return new Booking(id, subscription, status);
+    }
+
     public static Booking done(SessionId session, ParticipantId participant, SubscriptionId subscription) {
         return new Booking(new BookingId(session, participant), subscription, Status.DONE);
     }

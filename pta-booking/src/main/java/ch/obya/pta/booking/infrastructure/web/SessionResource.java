@@ -1,6 +1,9 @@
 package ch.obya.pta.booking.infrastructure.web;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -13,7 +16,6 @@ import org.zalando.problem.Status;
 import io.quarkus.resteasy.reactive.links.InjectRestLinks;
 import io.quarkus.resteasy.reactive.links.RestLink;
 import io.quarkus.resteasy.reactive.links.RestLinkType;
-import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
 import ch.obya.pta.booking.application.BookingService;
@@ -21,11 +23,11 @@ import ch.obya.pta.booking.domain.repository.SessionRepository;
 import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
 import ch.obya.pta.booking.domain.vo.SessionId;
-import ch.obya.pta.common.util.search.FindCriteria;
 
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static ch.obya.pta.common.util.search.AttributeFilter.greaterThanOrEqual;
+import static ch.obya.pta.common.util.search.AttributeFilter.lessThanOrEqual;
 
-@Produces("application/problem+json")
+@Produces({"application/json", "application/problem+json"})
 @Path("/sessions")
 public class SessionResource {
 
@@ -34,15 +36,21 @@ public class SessionResource {
     @Inject
     SessionRepository sessionRepository;
 
-    @InjectRestLinks
-    @RestLink
+    static final int DEFAULT_PERIOD_DAYS = 7;
+
+    /**
+     * Lists the sessions taking place between {@code from} and {@code to} (inclusive), in chronological order.
+     * Defaults to the coming {@value DEFAULT_PERIOD_DAYS} days starting today.
+     */
     @GET
-    public Multi<SessionDto> list(@RestQuery LocalDate from, @RestQuery LocalDate to) {
-        return sessionRepository.findByCriteria(
-                FindCriteria.from("from:%s,to:%s".formatted(
-                        ISO_LOCAL_DATE.format(from),
-                        ISO_LOCAL_DATE.format(to))))
-                .map(SessionDto::from);
+    public Uni<List<SessionDto>> list(@RestQuery LocalDate from, @RestQuery LocalDate to) {
+        var start = Optional.ofNullable(from).orElseGet(LocalDate::now);
+        var end = Optional.ofNullable(to).orElseGet(() -> start.plusDays(DEFAULT_PERIOD_DAYS));
+        if (end.isBefore(start)) {
+            return Uni.createFrom().failure(Problem.valueOf(Status.BAD_REQUEST, "'to' must not be before 'from'"));
+        }
+        return sessionRepository.findByCriteria(Map.of("day", List.of(greaterThanOrEqual(start), lessThanOrEqual(end))))
+                .map(sessions -> sessions.stream().map(SessionDto::from).toList());
     }
 
     @InjectRestLinks(RestLinkType.INSTANCE)
@@ -96,10 +104,9 @@ public class SessionResource {
 
     @GET
     @Path("{id}/bookings")
-    public Multi<BookingDto> listBookings(SessionId id) {
+    public Uni<List<BookingDto>> listBookings(SessionId id) {
         return bookingService.findOne(id)
                 .onFailure().transform(f -> Problem.valueOf(Status.NOT_FOUND, f.getMessage()))
-                .onItem().transformToMulti(s -> Multi.createFrom().iterable(s.bookings()))
-                .map(BookingDto::from);
+                .map(s -> s.bookings().stream().map(BookingDto::from).toList());
     }
 }
