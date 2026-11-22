@@ -11,7 +11,6 @@ import ch.obya.pta.customer.domain.event.CustomerModified;
 import ch.obya.pta.customer.domain.util.PhoneNumberChecker;
 import ch.obya.pta.customer.domain.vo.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -24,7 +23,7 @@ public class Customer extends BaseEntity<Customer, CustomerId, Customer.State> {
 
     private final Set<Subscription> subscriptions = new HashSet<>();
 
-    @Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
+    @lombok.Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
     public record State(
         Person person,
         PhysicalAddress deliveryAddress,

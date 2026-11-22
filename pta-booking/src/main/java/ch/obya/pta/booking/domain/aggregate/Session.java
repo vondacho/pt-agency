@@ -9,7 +9,6 @@ import ch.obya.pta.common.domain.entity.BaseEntity;
 import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.util.CommonProblem;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -29,7 +28,7 @@ import static ch.obya.pta.common.domain.util.CommonProblem.ifThrow;
 public class Session extends BaseEntity<Session, SessionId, Session.State> {
 
     private final ArticleId articleId;
-    @Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
+    @lombok.Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
     public record State(
         String title,
         TimeSlot slot,
@@ -44,7 +43,7 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
         }
     }
 
-    @Builder(builderClassName = "Builder", toBuilder = true)
+    @lombok.Builder(builderClassName = "Builder", toBuilder = true)
     public record TimeSlot(LocalDate dow, LocalTime start, LocalTime stop, Duration duration) {
         public TimeSlot {
             ifNullThrow(start, CommonProblem.AttributeNotNull.toException("TimeSlot.start"));

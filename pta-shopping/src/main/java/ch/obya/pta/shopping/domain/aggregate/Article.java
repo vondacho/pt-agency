@@ -12,7 +12,6 @@ import ch.obya.pta.shopping.domain.vo.ArticleId;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
@@ -27,7 +26,7 @@ import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 @Getter
 public class Article extends BaseEntity<Article, ArticleId, Article.State> {
 
-    @Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
+    @lombok.Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
     public record State(
             Name name,
             Text description,

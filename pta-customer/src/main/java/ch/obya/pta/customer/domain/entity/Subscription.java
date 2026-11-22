@@ -10,7 +10,6 @@ import ch.obya.pta.customer.domain.vo.ArticleId;
 import ch.obya.pta.customer.domain.vo.SubscriptionId;
 import io.quarkus.logging.Log;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +24,7 @@ public class Subscription extends BaseEntity<Subscription, SubscriptionId, Subsc
 
     private ArticleId articleId;
 
-    @Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
+    @lombok.Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
     public record State(Validity validity, Quota quota, int credits) {
         public State {
             ifNullThrow(validity, CommonProblem.AttributeNotNull.toException("Subscription.validity"));

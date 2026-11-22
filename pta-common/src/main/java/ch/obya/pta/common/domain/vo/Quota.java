@@ -2,11 +2,10 @@ package ch.obya.pta.common.domain.vo;
 
 
 import ch.obya.pta.common.domain.util.CommonProblem;
-import lombok.Builder;
 
 import static ch.obya.pta.common.domain.util.CommonProblem.ifThrow;
 
-@Builder(builderClassName = "Builder", toBuilder = true)
+@lombok.Builder(builderClassName = "Builder", toBuilder = true)
 public record Quota(Integer min, Integer max) {
     public Quota {
         ifThrow(() -> min == null && max == null, CommonProblem.QuotaInvalid.toException(min, max));

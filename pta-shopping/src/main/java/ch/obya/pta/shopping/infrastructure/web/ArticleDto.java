@@ -8,11 +8,10 @@ import ch.obya.pta.shopping.domain.aggregate.Article;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
-import lombok.Builder;
 
 import java.util.Set;
 
-@Builder(builderClassName = "Builder", toBuilder = true)
+@lombok.Builder(builderClassName = "Builder", toBuilder = true)
 public record ArticleDto(
         ArticleId id,
         Name name,

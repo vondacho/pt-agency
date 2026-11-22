@@ -3,9 +3,8 @@ package ch.obya.pta.customer.infrastructure.web;
 import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.customer.domain.aggregate.Customer;
 import ch.obya.pta.customer.domain.vo.*;
-import lombok.Builder;
 
-@Builder(builderClassName = "Builder", toBuilder = true)
+@lombok.Builder(builderClassName = "Builder", toBuilder = true)
 public record CustomerDto(
         CustomerId id,
         String salutation,

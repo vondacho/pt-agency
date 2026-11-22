@@ -3,7 +3,6 @@ package ch.obya.pta.customer.domain.vo;
 import ch.obya.pta.common.domain.util.CommonProblem;
 import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.customer.domain.util.CustomerProblem;
-import lombok.Builder;
 
 import java.text.DateFormat;
 import java.time.LocalDate;
@@ -11,7 +10,7 @@ import java.time.LocalDate;
 import static ch.obya.pta.common.domain.util.CommonProblem.*;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
-@Builder(builderClassName = "Builder", toBuilder = true)
+@lombok.Builder(builderClassName = "Builder", toBuilder = true)
 public record Person(
         String salutation,
         Name firstName,

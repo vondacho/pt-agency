@@ -1,424 +1,5 @@
 {
-  "openapi" : "3.0.3",
-  "info" : {
-    "title" : "Customer API",
-    "description" : "Customer API",
-    "termsOfService" : "Your terms here",
-    "contact" : {
-      "name" : "Example API Support",
-      "url" : "https://ptagency.ch/contact",
-      "email" : "techsupport@ptagency.ch"
-    },
-    "license" : {
-      "name" : "Apache 2.0",
-      "url" : "https://www.apache.org/licenses/LICENSE-2.0.html"
-    },
-    "version" : "1.0.0"
-  },
-  "servers" : [ {
-    "url" : "http://localhost:8080",
-    "description" : "Auto generated value"
-  }, {
-    "url" : "http://0.0.0.0:8080",
-    "description" : "Auto generated value"
-  } ],
-  "paths" : {
-    "/customers" : {
-      "get" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "birth",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }, {
-          "name" : "email",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }, {
-          "name" : "firstname",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }, {
-          "name" : "gender",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }, {
-          "name" : "lastname",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }, {
-          "name" : "phone",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/CustomerDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post" : {
-        "tags" : [ "Customer Resource" ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/CustomerDto"
-              }
-            }
-          }
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/CustomerId"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/customers/{id}" : {
-      "get" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/CustomerDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/CustomerDto"
-              }
-            }
-          }
-        },
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          }
-        }
-      },
-      "delete" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        }, {
-          "name" : "force",
-          "in" : "query",
-          "schema" : {
-            "type" : "boolean"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          }
-        }
-      },
-      "patch" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        }, {
-          "name" : "billing",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/PhysicalAddress"
-          }
-        }, {
-          "name" : "birth",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Birth"
-          }
-        }, {
-          "name" : "delivery",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/PhysicalAddress"
-          }
-        }, {
-          "name" : "email",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/EmailAddress"
-          }
-        }, {
-          "name" : "firstname",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Name"
-          }
-        }, {
-          "name" : "gender",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Gender"
-          }
-        }, {
-          "name" : "lastname",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Name"
-          }
-        }, {
-          "name" : "notes",
-          "in" : "query",
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "phone",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/PhoneNumber"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          }
-        }
-      }
-    },
-    "/customers/{id}/connection" : {
-      "patch" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        }, {
-          "name" : "email",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/EmailAddress"
-          }
-        }, {
-          "name" : "phone",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/PhoneNumber"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          }
-        }
-      }
-    },
-    "/customers/{id}/definition" : {
-      "patch" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        }, {
-          "name" : "birth",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Birth"
-          }
-        }, {
-          "name" : "gender",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Gender"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          }
-        }
-      }
-    },
-    "/customers/{id}/location" : {
-      "patch" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        }, {
-          "name" : "billing",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/PhysicalAddress"
-          }
-        }, {
-          "name" : "delivery",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/PhysicalAddress"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          }
-        }
-      }
-    },
-    "/customers/{id}/naming" : {
-      "patch" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        }, {
-          "name" : "firstname",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Name"
-          }
-        }, {
-          "name" : "lastname",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/Name"
-          }
-        } ],
-        "responses" : {
-          "204" : {
-            "description" : "No Content"
-          }
-        }
-      }
-    },
-    "/customers/{id}/subscriptions" : {
-      "get" : {
-        "tags" : [ "Customer Resource" ],
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CustomerId"
-          }
-        }, {
-          "name" : "at",
-          "in" : "query",
-          "schema" : {
-            "$ref" : "#/components/schemas/LocalDate"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/problem+json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/SubscriptionDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
+  "openapi" : "3.1.0",
   "components" : {
     "schemas" : {
       "ArticleId" : {
@@ -492,13 +73,90 @@
         }
       },
       "Gender" : {
-        "enum" : [ "MALE", "FEMALE" ],
-        "type" : "string"
+        "type" : "string",
+        "enum" : [ "MALE", "FEMALE" ]
+      },
+      "HttpProblem" : {
+        "description" : "HTTP Problem Response according to RFC9457 and RFC7807",
+        "additionalProperties" : true,
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri",
+            "description" : "A optional URI reference that identifies the problem type",
+            "examples" : [ "https://example.com/errors/not-found" ]
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "A optional, short, human-readable summary of the problem type",
+            "examples" : [ "Not Found" ]
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The HTTP status code for this occurrence of the problem",
+            "examples" : [ 404 ]
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "A optional human-readable explanation specific to this occurrence of the problem",
+            "examples" : [ "Record not found" ]
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri",
+            "description" : "A URI reference that identifies the specific occurrence of the problem",
+            "examples" : [ "https://api.example.com/errors/123" ]
+          }
+        }
+      },
+      "HttpValidationProblem" : {
+        "description" : "HTTP Validation Problem Response according to RFC9457 and RFC7807",
+        "additionalProperties" : true,
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "format" : "uri",
+            "description" : "A optional URI reference that identifies the problem type",
+            "examples" : [ "https://example.com/errors/not-found" ]
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "A optional, short, human-readable summary of the problem type",
+            "examples" : [ "Not Found" ]
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "The HTTP status code for this occurrence of the problem",
+            "examples" : [ 404 ]
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "A optional human-readable explanation specific to this occurrence of the problem",
+            "examples" : [ "Record not found" ]
+          },
+          "instance" : {
+            "type" : "string",
+            "format" : "uri",
+            "description" : "A URI reference that identifies the specific occurrence of the problem",
+            "examples" : [ "https://api.example.com/errors/123" ]
+          },
+          "violations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Violation"
+            },
+            "description" : "List of validation constraint violations that occurred"
+          }
+        }
       },
       "LocalDate" : {
-        "format" : "date",
         "type" : "string",
-        "example" : "2022-03-10"
+        "format" : "date",
+        "examples" : [ "2022-03-10" ]
       },
       "Name" : {
         "type" : "object",
@@ -540,12 +198,12 @@
         "type" : "object",
         "properties" : {
           "min" : {
-            "format" : "int32",
-            "type" : "integer"
+            "type" : "integer",
+            "format" : "int32"
           },
           "max" : {
-            "format" : "int32",
-            "type" : "integer"
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -565,8 +223,8 @@
             "$ref" : "#/components/schemas/Quota"
           },
           "credits" : {
-            "format" : "int32",
-            "type" : "integer"
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -579,9 +237,9 @@
         }
       },
       "UUID" : {
+        "type" : "string",
         "format" : "uuid",
-        "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
-        "type" : "string"
+        "pattern" : "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
       },
       "Validity" : {
         "type" : "object",
@@ -593,7 +251,466 @@
             "$ref" : "#/components/schemas/LocalDate"
           }
         }
+      },
+      "Violation" : {
+        "type" : "object",
+        "description" : "Validation constraint violation details",
+        "properties" : {
+          "field" : {
+            "type" : "string",
+            "description" : "The field for which the validation failed",
+            "examples" : [ "#/profile/email" ]
+          },
+          "in" : {
+            "type" : "string",
+            "description" : "Part of the http request where the validation error occurred such as query, path, header, form, body",
+            "examples" : [ "query", "path", "header", "form", "body" ]
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "Description of the validation error",
+            "examples" : [ "Invalid email format" ]
+          }
+        }
       }
     }
-  }
+  },
+  "paths" : {
+    "/customers" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "birth",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "email",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "firstname",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "gender",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "lastname",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "phone",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CustomerDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Search",
+        "tags" : [ "Customer Resource" ]
+      },
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CustomerDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomerId"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Create",
+        "tags" : [ "Customer Resource" ]
+      }
+    },
+    "/customers/{id}" : {
+      "patch" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        }, {
+          "name" : "billing",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/PhysicalAddress"
+          }
+        }, {
+          "name" : "birth",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Birth"
+          }
+        }, {
+          "name" : "delivery",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/PhysicalAddress"
+          }
+        }, {
+          "name" : "email",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/EmailAddress"
+          }
+        }, {
+          "name" : "firstname",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Name"
+          }
+        }, {
+          "name" : "gender",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Gender"
+          }
+        }, {
+          "name" : "lastname",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Name"
+          }
+        }, {
+          "name" : "notes",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "phone",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/PhoneNumber"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Update",
+        "tags" : [ "Customer Resource" ]
+      },
+      "put" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CustomerDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Replace",
+        "tags" : [ "Customer Resource" ]
+      },
+      "delete" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        }, {
+          "name" : "force",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Remove",
+        "tags" : [ "Customer Resource" ]
+      },
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CustomerDto"
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Get",
+        "tags" : [ "Customer Resource" ]
+      }
+    },
+    "/customers/{id}/connection" : {
+      "patch" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        }, {
+          "name" : "email",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/EmailAddress"
+          }
+        }, {
+          "name" : "phone",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/PhoneNumber"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Reconnect",
+        "tags" : [ "Customer Resource" ]
+      }
+    },
+    "/customers/{id}/definition" : {
+      "patch" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        }, {
+          "name" : "birth",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Birth"
+          }
+        }, {
+          "name" : "gender",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Gender"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Redefine",
+        "tags" : [ "Customer Resource" ]
+      }
+    },
+    "/customers/{id}/location" : {
+      "patch" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        }, {
+          "name" : "billing",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/PhysicalAddress"
+          }
+        }, {
+          "name" : "delivery",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/PhysicalAddress"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Relocate",
+        "tags" : [ "Customer Resource" ]
+      }
+    },
+    "/customers/{id}/naming" : {
+      "patch" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        }, {
+          "name" : "firstname",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Name"
+          }
+        }, {
+          "name" : "lastname",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Name"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "summary" : "Rename",
+        "tags" : [ "Customer Resource" ]
+      }
+    },
+    "/customers/{id}/subscriptions" : {
+      "get" : {
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/CustomerId"
+          }
+        }, {
+          "name" : "at",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/LocalDate"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/SubscriptionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary" : "Valid Subscriptions Of",
+        "tags" : [ "Customer Resource" ]
+      }
+    }
+  },
+  "info" : {
+    "title" : "Customer API",
+    "version" : "1.0.0",
+    "description" : "Customer API",
+    "termsOfService" : "Your terms here",
+    "contact" : {
+      "name" : "Example API Support",
+      "email" : "techsupport@ptagency.ch",
+      "url" : "https://ptagency.ch/contact"
+    },
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080",
+    "description" : "Auto generated value"
+  }, {
+    "url" : "http://0.0.0.0:8080",
+    "description" : "Auto generated value"
+  } ]
 }

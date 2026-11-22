@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ch.obya</groupId>
-        <artifactId>pta-parent</artifactId>
+        <artifactId>pta-quarkus-parent</artifactId>
         <version>0.1.0</version>
-        <relativePath>../pta-parent/pom.xml</relativePath>
+        <relativePath>../pta-quarkus-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-customer</artifactId>
     <version>0.3.0</version>
@@ -54,7 +54,7 @@
             <artifactId>quarkus-smallrye-openapi</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.tietoevry.quarkus</groupId>
+            <groupId>io.quarkiverse.resteasy-problem</groupId>
             <artifactId>quarkus-resteasy-problem</artifactId>
         </dependency>
         <dependency>

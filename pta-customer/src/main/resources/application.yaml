@@ -7,8 +7,8 @@ quarkus:
     enabled: true
     port: 9000
   quinoa:
-    package-manager-install: true
     package-manager-install:
+      ~: true
       node-version: 20.10.0
   smallrye-openapi:
     info-contact-email: techsupport@ptagency.ch

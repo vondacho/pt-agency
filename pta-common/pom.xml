@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ch.obya</groupId>
-        <artifactId>pta-parent</artifactId>
+        <artifactId>pta-quarkus-parent</artifactId>
         <version>0.1.0</version>
-        <relativePath>../pta-parent/pom.xml</relativePath>
+        <relativePath>../pta-quarkus-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-common</artifactId>
     <version>0.4.0</version>

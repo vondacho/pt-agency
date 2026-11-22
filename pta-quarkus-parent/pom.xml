@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ch.obya</groupId>
-    <artifactId>pta-parent</artifactId>
+    <artifactId>pta-quarkus-parent</artifactId>
     <version>0.1.0</version>
     <packaging>pom</packaging>
 
@@ -13,8 +13,8 @@
         <repo.scm.connection>git@github.com:vondacho/pt-agency</repo.scm.connection>
         <repo.scm.url>https://github.com/vondacho/pt-agency</repo.scm.url>
 
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <version.lombok>1.18.48</version.lombok>
         <maven.min.version>3.2.5</maven.min.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -22,15 +22,14 @@
 
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-        <quarkus.platform.version>3.11.0</quarkus.platform.version>
+        <quarkus.platform.version>3.40.1</quarkus.platform.version>
 
         <version.checkstyle.plugin>3.1.1</version.checkstyle.plugin>
         <version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
         <version.formatter.plugin>2.24.0</version.formatter.plugin>
         <version.impsort.plugin>1.10.0</version.impsort.plugin>
         <version.license.plugin>4.5</version.license.plugin>
-        <version.surfire.plugin>3.2.5</version.surfire.plugin>
-        <version.surefire.plugin>3.2.5</version.surefire.plugin>
+        <version.surefire.plugin>3.5.4</version.surefire.plugin>
         <version.compiler.plugin>3.13.0</version.compiler.plugin>
 
         <skipITs>true</skipITs>
@@ -79,17 +78,17 @@
             <dependency>
                 <groupId>io.quarkiverse.cucumber</groupId>
                 <artifactId>quarkus-cucumber</artifactId>
-                <version>1.0.0</version>
+                <version>1.5.0</version>
             </dependency>
             <dependency>
                 <groupId>io.quarkiverse.quinoa</groupId>
                 <artifactId>quarkus-quinoa</artifactId>
-                <version>2.3.6</version>
+                <version>2.9.3</version>
             </dependency>
             <dependency>
-                <groupId>com.tietoevry.quarkus</groupId>
+                <groupId>io.quarkiverse.resteasy-problem</groupId>
                 <artifactId>quarkus-resteasy-problem</artifactId>
-                <version>3.9.0</version>
+                <version>3.32.1</version>
             </dependency>
             <dependency>
                 <groupId>org.zalando</groupId>
@@ -104,7 +103,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.30</version>
+                <version>${version.lombok}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -122,6 +121,32 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.surefire.plugin}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.compiler.plugin}</version>
+                <configuration>
+                    <parameters>true</parameters>
+                    <!-- JDK 23+ no longer discovers annotation processors on the classpath: declare them explicitly -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${version.lombok}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>${quarkus.platform.group-id}</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>

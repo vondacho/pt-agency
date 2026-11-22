@@ -3,11 +3,10 @@ package ch.obya.pta.booking.domain.vo;
 
 import ch.obya.pta.common.domain.vo.Validity;
 import ch.obya.pta.common.domain.util.CommonProblem;
-import lombok.Builder;
 
 import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
 
-@Builder(builderClassName = "Builder", toBuilder = true)
+@lombok.Builder(builderClassName = "Builder", toBuilder = true)
 public record Subscription(SubscriptionId id,
                            ArticleId articleId,
                            Validity validity) {
