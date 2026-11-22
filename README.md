@@ -5,5 +5,6 @@
 ![build workflow](https://github.com/vondacho/pt-agency/actions/workflows/ci-invoicing.yml/badge.svg)
 ![build workflow](https://github.com/vondacho/pt-agency/actions/workflows/ci-designer.yml/badge.svg)
 ![build workflow](https://github.com/vondacho/pt-agency/actions/workflows/ci-common.yml/badge.svg)
+![build workflow](https://github.com/vondacho/pt-agency/actions/workflows/ci-www.yml/badge.svg)
 
 A system which supports the daily business of a personal training agency

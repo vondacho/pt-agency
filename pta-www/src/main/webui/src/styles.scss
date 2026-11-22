@@ -1,0 +1,61 @@
+/* Design tokens: light by default, dark when the participant's system asks for it. */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --border: #e2e5ea;
+  --track: #eceef2;
+  --text: #17191d;
+  --text-secondary: #5c6370;
+
+  --accent: #2f5bd3;
+  --on-accent: #ffffff;
+  --positive: #1f7a4d;
+  --positive-tint: #e3f3ea;
+  --caution: #a15c00;
+  --caution-tint: #fdf1de;
+  --muted: #6b7280;
+  --muted-tint: #eef0f3;
+
+  --radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101216;
+    --surface: #181b21;
+    --border: #2a2f38;
+    --track: #262a32;
+    --text: #eceef2;
+    --text-secondary: #9aa2b1;
+
+    --accent: #7c9cff;
+    --on-accent: #0d1220;
+    --positive: #5cc98f;
+    --positive-tint: #15291f;
+    --caution: #f0b252;
+    --caution-tint: #2d2312;
+    --muted: #9aa2b1;
+    --muted-tint: #23272e;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}

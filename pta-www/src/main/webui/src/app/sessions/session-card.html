@@ -1,0 +1,37 @@
+<article class="card" [class]="'is-' + availability().kind">
+  <div class="time">
+    <time [attr.datetime]="session().day + 'T' + start()">{{ start() }}</time>
+    <span class="stop">{{ stop() }}</span>
+  </div>
+
+  <div class="body">
+    <h3 class="title">{{ session().title }}</h3>
+    <p class="location">
+      <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14">
+        <path d="M8 1.5a4.5 4.5 0 0 0-4.5 4.5c0 3.2 4.5 8.5 4.5 8.5s4.5-5.3 4.5-8.5A4.5 4.5 0 0 0 8 1.5Zm0 6.2a1.7 1.7 0 1 1 0-3.4 1.7 1.7 0 0 1 0 3.4Z" fill="currentColor"/>
+      </svg>
+      {{ session().location }}
+    </p>
+
+    <div class="seats">
+      @if (fill() !== null) {
+        <div class="meter" role="meter"
+             [attr.aria-valuenow]="session().bookedSeats" aria-valuemin="0" [attr.aria-valuemax]="session().maxSeats"
+             [attr.aria-label]="'Seats booked: ' + seatsSummary()">
+          <div class="meter-fill" [style.width.%]="fill()"></div>
+          @if (minMarker() !== null) {
+            <div class="meter-min" [style.left.%]="minMarker()" title="Minimum to take place"></div>
+          }
+        </div>
+      }
+      <span class="summary">{{ seatsSummary() }}</span>
+    </div>
+  </div>
+
+  <p class="status">
+    <span class="badge">{{ label() }}</span>
+    @if (availability().kind === 'open' && session().minSeats) {
+      <span class="confirmed">Confirmed</span>
+    }
+  </p>
+</article>

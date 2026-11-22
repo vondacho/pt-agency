@@ -1,0 +1,48 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+
+  .container {
+    display: flex;
+    align-items: center;
+    height: 3.5rem;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+main {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}

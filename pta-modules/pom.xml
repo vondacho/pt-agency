@@ -14,5 +14,6 @@
         <module>../pta-shopping</module>
         <module>../pta-customer</module>
         <module>../pta-common</module>
+        <module>../pta-www</module>
     </modules>
 </project>
