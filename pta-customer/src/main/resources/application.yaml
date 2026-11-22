@@ -1,7 +1,5 @@
 quarkus:
   datasource:
-    password: connor
-    username: sarah
     db-kind: postgresql
   management:
     enabled: true

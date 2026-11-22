@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: Customer API
+  title: Customer API (development)
   description: Customer API
   termsOfService: Your terms here
   contact:
@@ -14,9 +14,9 @@ info:
   version: 1.0.0
 servers:
 - url: http://localhost:8080
-  description: Auto generated value
+  description: Auto-added by management interface
 - url: http://0.0.0.0:8080
-  description: Auto generated value
+  description: Auto-added by management interface
 paths:
   /customers:
     get:
