@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'pta-common/**'
+      - 'pta-quarkus-parent/**'
     tags:
       - 'v*.*.*-pta-common'
     branches:
@@ -32,6 +33,19 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B package --file pta-common/pom.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish parent POM to GitHub Packages
+        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, 'pta-common')
+        # consumers resolving pta-common from the registry need its parent there too; skip if this version exists already
+        run: |
+          version=$(mvn -B -q -N help:evaluate -Dexpression=project.version -DforceStdout --file pta-quarkus-parent/pom.xml)
+          if mvn -B -q dependency:get -Dartifact=ch.obya:pta-quarkus-parent:${version}:pom -Dtransitive=false -DremoteRepositories=github::default::https://maven.pkg.github.com/vondacho/pt-agency >/dev/null 2>&1; then
+            echo "pta-quarkus-parent ${version} already published"
+          else
+            mvn -B -N deploy --file pta-quarkus-parent/pom.xml
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -6,11 +6,11 @@
     <parent>
         <groupId>ch.obya</groupId>
         <artifactId>pta-quarkus-parent</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0</version>
         <relativePath>../pta-quarkus-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-common</artifactId>
-    <version>0.4.0</version>
+    <version>0.5.0</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
