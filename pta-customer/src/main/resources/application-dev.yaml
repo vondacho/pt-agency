@@ -1,9 +1,28 @@
 quarkus:
   management:
+    enabled: true
     host: localhost
   smallrye-openapi:
     info-title: Customer API (development)
-  hibernate-orm:
-    database:
-      generation: drop-and-create
+  datasource:
+    username: ${PTA_CUSTOMER_DB_USERNAME}
+    password: ${PTA_CUSTOMER_DB_PASSWORD}
+    reactive:
+      url: postgresql://db-postgresql-fra1-09256-do-user-1676823-0.a.db.ondigitalocean.com:25060/pta-customer
+      max-size: 20
+      hostname-verification-algorithm: HTTPS
+      trust-certificate-pem:
+        ~: true
+        certs: ca-certificate.crt
+      postgresql:
+        ssl-mode: verify-full
+    jdbc:
+      url: jdbc:postgresql://db-postgresql-fra1-09256-do-user-1676823-0.a.db.ondigitalocean.com:25060/pta-customer
+  flyway:
+    migrate-at-start: true
+    validate-migration-naming: true
+
+#  hibernate-orm:
+#    database:
+#      generation: drop-and-create
 
