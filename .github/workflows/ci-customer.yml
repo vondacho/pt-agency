@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to the Container registry
-        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '${{ env.MODULE_NAME }}')
+        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, env.MODULE_NAME)
         uses: docker/login-action@v3
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sanitize tag name
-        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '${{ env.MODULE_NAME }}')
+        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, env.MODULE_NAME)
         uses: actions/github-script@v7
         id: sanitized_tag
         with:
@@ -58,7 +58,7 @@ jobs:
           script: return '${{ github.ref }}'.replace('refs/tags/', '').replace('-${{ env.MODULE_NAME }}', '').trim()
 
       - name: Build and push Docker image
-        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '${{ env.MODULE_NAME }}')
+        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, env.MODULE_NAME)
         id: push
         uses: docker/build-push-action@v5
         with:
@@ -70,7 +70,7 @@ jobs:
             ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.sanitized_tag.outputs.result }}
 
       - name: Generate artifact attestation
-        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '${{ env.MODULE_NAME }}')
+        if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, env.MODULE_NAME)
         uses: actions/attest-build-provenance@v1
         with:
           subject-name: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME}}
