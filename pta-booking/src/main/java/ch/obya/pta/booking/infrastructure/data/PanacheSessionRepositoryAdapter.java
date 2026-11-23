@@ -1,5 +1,6 @@
 package ch.obya.pta.booking.infrastructure.data;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import io.smallrye.mutiny.Uni;
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
 import ch.obya.pta.booking.domain.vo.ArticleId;
+import ch.obya.pta.booking.domain.vo.ParticipantId;
 import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.common.domain.entity.Entity;
 import ch.obya.pta.common.domain.util.CommonProblem;
@@ -37,6 +39,13 @@ public class PanacheSessionRepositoryAdapter implements SessionRepository {
     @Override
     public Uni<List<Session>> findAll() {
         return PanacheSessionEntity.<PanacheSessionEntity>findAll(PanacheSessionEntity.CHRONOLOGICAL)
+                .list()
+                .map(l -> l.stream().map(PanacheSessionEntity::toDomain).toList());
+    }
+
+    @Override
+    public Uni<List<Session>> findBookedBy(ParticipantId participant, LocalDate from) {
+        return PanacheSessionEntity.findBookedBy(participant.id(), from)
                 .list()
                 .map(l -> l.stream().map(PanacheSessionEntity::toDomain).toList());
     }

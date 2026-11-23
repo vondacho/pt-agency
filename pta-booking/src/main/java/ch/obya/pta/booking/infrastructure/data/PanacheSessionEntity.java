@@ -51,6 +51,11 @@ class PanacheSessionEntity extends PanacheEntity {
         return find("logicalId", id.id());
     }
 
+    static PanacheQuery<PanacheSessionEntity> findBookedBy(UUID participant, LocalDate from) {
+        return find("select distinct s from training_session s join s.bookings b"
+                + " where b.participantId = ?1 and s.day >= ?2", CHRONOLOGICAL, participant, from);
+    }
+
     /**
      * Translates attribute filters into an HQL where-clause with positional parameters,
      * so that several filters on the same attribute (e.g. a date range) do not collide.
