@@ -11,6 +11,8 @@ on:
   workflow_dispatch:
 
 env:
+  # Maven Central throttles parallel CI downloads (HTTP 429): retry with backoff
+  MAVEN_ARGS: "-Daether.connector.http.retryHandler.count=8 -Daether.connector.http.retryHandler.interval=10000 -Daether.connector.http.retryHandler.serviceUnavailable=429,503"
   MODULE_NAME: pta-booking
   DOCKER_REGISTRY: ghcr.io
   DOCKER_IMAGE_NAME: ${{ github.repository }}/pta-booking
