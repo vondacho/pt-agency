@@ -28,7 +28,8 @@ start() {
 
 wait_for() {
   local name=$1 url=$2
-  if curl -s -o /dev/null --retry 120 --retry-delay 2 --retry-connrefused --retry-all-errors "$url"; then
+  # --fail: an error answer (e.g. a service started without its database) is not "up"
+  if curl -sf -o /dev/null --retry 120 --retry-delay 2 --retry-connrefused --retry-all-errors "$url"; then
     echo "$name is up: $url"
   else
     echo "$name did not start, see its target/dev.log" >&2

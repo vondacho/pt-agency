@@ -51,6 +51,38 @@ export function weekDays(isoDate: string): string[] {
   return Array.from({ length: WEEK_LENGTH }, (_, i) => addDays(monday, i));
 }
 
+/** First day of the month the date belongs to. */
+export function startOfMonth(isoDate: string): string {
+  return `${isoDate.slice(0, 7)}-01`;
+}
+
+/** The same day of month `months` later (or earlier), clamped to the length of the target month. */
+export function addMonths(isoDate: string, months: number): string {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const target = new Date(year, month - 1 + months, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  return format(new Date(target.getFullYear(), target.getMonth(), Math.min(day, lastDay)));
+}
+
+/**
+ * The weeks (Monday to Sunday) covering the month the date belongs to: 4 to 6 rows of 7 days,
+ * starting with the Monday on or before the 1st and ending with the Sunday on or after the last day.
+ */
+export function monthWeeks(isoDate: string): string[][] {
+  const first = startOfMonth(isoDate);
+  const last = addDays(addMonths(first, 1), -1);
+  const weeks: string[][] = [];
+  for (let monday = startOfWeek(first); monday <= last; monday = addDays(monday, 7)) {
+    weeks.push(weekDays(monday));
+  }
+  return weeks;
+}
+
+/** e.g. `November 2026` */
+export function monthLabel(isoDate: string, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(parse(isoDate));
+}
+
 /** `18:30:00` or `18:30` → minutes since midnight */
 export function minutesOf(isoTime: string): number {
   const [hours, minutes] = isoTime.split(':').map(Number);

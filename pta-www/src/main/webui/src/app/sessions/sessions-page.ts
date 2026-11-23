@@ -2,31 +2,32 @@ import { Component, computed, DestroyRef, inject, input, signal } from '@angular
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../auth/auth.service';
-import { addDays, dayHeading, isIsoDate, longDay, nowMinutes, periodLabel, shortDay, startOfWeek, today, weekDays } from './calendar';
+import { addDays, addMonths, dayHeading, isIsoDate, longDay, monthLabel, monthWeeks, nowMinutes, periodLabel, shortDay, startOfWeek, today, weekDays } from './calendar';
 import { DayView } from './day-view';
+import { MonthView } from './month-view';
 import { axisFor } from './schedule';
 import { SessionService } from './session.service';
 import { WeekView } from './week-view';
 
-export type View = 'week' | 'day';
+export type View = 'month' | 'week' | 'day';
 
-/** Below this width the week grid is not readable: the day view (with its week strip) is shown instead. */
+/** Below this width the week grid is not readable: the day view (with its week strip) is shown instead; the month stays. */
 const NARROW = '(max-width: 719px)';
 
 /**
- * Session planning: a week on a time grid, or one day with the sessions' details and actions.
- * State lives in the URL (`?view=week|day&date=YYYY-MM-DD&focus=<session>`), so views can be bookmarked and shared.
+ * Session planning: a month calendar, a week on a time grid, or one day with the sessions' details and actions.
+ * State lives in the URL (`?view=month|week|day&date=YYYY-MM-DD&focus=<session>`), so views can be bookmarked and shared.
  */
 @Component({
   selector: 'pta-sessions-page',
-  imports: [RouterLink, WeekView, DayView],
+  imports: [RouterLink, MonthView, WeekView, DayView],
   templateUrl: './sessions-page.html',
   styleUrl: './sessions-page.scss',
 })
 export class SessionsPage {
-  /** `week` (default) or `day`. */
+  /** `week` (default), `month` or `day`. */
   readonly view = input<string>();
-  /** Any day of the week to show, or the day to show. */
+  /** Any day of the month or week to show, or the day to show. */
   readonly date = input<string>();
   /** Session to highlight in the day view. */
   readonly focus = input<string>();
@@ -46,9 +47,22 @@ export class SessionsPage {
     const requested = [this.date(), this.from()].find(isIsoDate) ?? this.today;
     return requested < this.firstDay ? this.firstDay : requested;
   });
-  protected readonly effectiveView = computed<View>(() => (this.narrow() || this.view() === 'day' ? 'day' : 'week'));
+  protected readonly effectiveView = computed<View>(() => {
+    const view = this.view();
+    if (view === 'month' || view === 'day') return view;
+    return this.narrow() ? 'day' : 'week';
+  });
+  /** Views offered by the toggle: the week grid is not readable on narrow screens. */
+  protected readonly views = computed<View[]>(() => (this.narrow() ? ['month', 'day'] : ['month', 'week', 'day']));
   protected readonly days = computed(() => weekDays(this.selected()));
-  protected readonly period = computed(() => ({ from: this.days()[0], to: this.days()[6] }));
+  protected readonly weeks = computed(() => monthWeeks(this.selected()));
+  protected readonly period = computed(() => {
+    if (this.effectiveView() === 'month') {
+      const weeks = this.weeks();
+      return { from: weeks[0][0], to: weeks[weeks.length - 1][6] };
+    }
+    return { from: this.days()[0], to: this.days()[6] };
+  });
 
   protected readonly sessions = inject(SessionService).sessionsIn(this.period);
   protected readonly me = inject(AuthService).me;
@@ -58,6 +72,7 @@ export class SessionsPage {
   protected readonly sessionCount = computed(() => this.sessions.value().length);
 
   protected readonly title = computed(() => {
+    if (this.effectiveView() === 'month') return monthLabel(this.selected());
     if (this.effectiveView() === 'week') return periodLabel(this.period().from, this.period().to);
     const relative = dayHeading(this.selected(), this.today).relative;
     return relative === 'Today' || relative === 'Tomorrow' ? `${relative}, ${longDay(this.selected())}` : longDay(this.selected());
@@ -79,16 +94,26 @@ export class SessionsPage {
       };
     }));
 
-  /** Previous week or day; nothing before the current week. */
+  /** Previous month, week or day; nothing entirely before the current week. */
   protected readonly previous = computed(() => {
-    const week = this.effectiveView() === 'week';
-    const candidate = addDays(this.selected(), week ? -7 : -1);
-    const lastDayShown = week ? weekDays(candidate)[6] : candidate;
+    const candidate = this.step(-1);
+    const lastDayShown = {
+      month: () => monthWeeks(candidate).at(-1)![6],
+      week: () => weekDays(candidate)[6],
+      day: () => candidate,
+    }[this.effectiveView()]();
     return lastDayShown < this.firstDay ? null : candidate;
   });
-  protected readonly next = computed(() => addDays(this.selected(), this.effectiveView() === 'week' ? 7 : 1));
-  protected readonly isCurrent = computed(() =>
-    this.effectiveView() === 'week' ? this.days().includes(this.today) : this.selected() === this.today);
+  protected readonly next = computed(() => this.step(1));
+  protected readonly isCurrent = computed(() => {
+    switch (this.effectiveView()) {
+      case 'month': return this.selected().slice(0, 7) === this.today.slice(0, 7);
+      case 'week': return this.days().includes(this.today);
+      case 'day': return this.selected() === this.today;
+    }
+  });
+  protected readonly currentLabel = computed(() => ({ month: 'This month', week: 'This week', day: 'Today' })[this.effectiveView()]);
+  protected readonly viewLabels: Record<View, string> = { month: 'Month', week: 'Week', day: 'Day' };
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -101,6 +126,14 @@ export class SessionsPage {
       const listener = (e: MediaQueryListEvent) => this.narrow.set(e.matches);
       query.addEventListener('change', listener);
       destroyRef.onDestroy(() => query.removeEventListener('change', listener));
+    }
+  }
+
+  private step(direction: 1 | -1): string {
+    switch (this.effectiveView()) {
+      case 'month': return addMonths(this.selected(), direction);
+      case 'week': return addDays(this.selected(), 7 * direction);
+      case 'day': return addDays(this.selected(), direction);
     }
   }
 

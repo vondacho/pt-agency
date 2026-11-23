@@ -1,4 +1,4 @@
-import { addDays, dayHeading, daysBetween, isIsoDate, longDay, minutesOf, nowMinutes, periodLabel, shortDay, startOfWeek, today, weekDays } from './calendar';
+import { addDays, addMonths, dayHeading, daysBetween, isIsoDate, longDay, minutesOf, monthLabel, monthWeeks, nowMinutes, periodLabel, shortDay, startOfMonth, startOfWeek, today, weekDays } from './calendar';
 
 describe('calendar', () => {
   it('formats today as a local ISO date, whatever the time of day', () => {
@@ -56,5 +56,34 @@ describe('weeks', () => {
   it('name days briefly or fully', () => {
     expect(shortDay('2026-11-26', 'en-GB')).toEqual({ weekday: 'Thu', day: '26' });
     expect(longDay('2026-11-26', 'en-GB')).toBe('Thursday 26 November');
+  });
+});
+
+describe('months', () => {
+  it('start on the first and move by whole months, clamping the day', () => {
+    expect(startOfMonth('2026-11-26')).toBe('2026-11-01');
+    expect(addMonths('2026-11-26', 1)).toBe('2026-12-26');
+    expect(addMonths('2026-12-15', 1)).toBe('2027-01-15');
+    expect(addMonths('2027-01-31', 1)).toBe('2027-02-28');
+    expect(addMonths('2026-03-31', -1)).toBe('2026-02-28');
+  });
+
+  it('are shown as whole weeks from Monday to Sunday', () => {
+    // November 2026 starts on a Sunday and ends on a Monday: 6 rows
+    const november = monthWeeks('2026-11-18');
+    expect(november.length).toBe(6);
+    expect(november[0][0]).toBe('2026-10-26');
+    expect(november[0][6]).toBe('2026-11-01');
+    expect(november[5][0]).toBe('2026-11-30');
+    expect(november[5][6]).toBe('2026-12-06');
+    // February 2027 starts on a Monday and ends on a Sunday: exactly 4 rows
+    const february = monthWeeks('2027-02-10');
+    expect(february.length).toBe(4);
+    expect(february[0][0]).toBe('2027-02-01');
+    expect(february[3][6]).toBe('2027-02-28');
+  });
+
+  it('are named with their year', () => {
+    expect(monthLabel('2026-11-26', 'en-GB')).toBe('November 2026');
   });
 });

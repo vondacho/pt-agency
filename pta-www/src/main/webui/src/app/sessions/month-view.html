@@ -1,0 +1,48 @@
+<table class="month">
+  <thead>
+    <tr>
+      @for (weekday of weekdays(); track $index) {
+        <th scope="col">{{ weekday }}</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row[0].day) {
+      <tr>
+        @for (cell of row; track cell.day) {
+          <td [class.is-other-month]="!cell.inMonth" [class.is-today]="cell.isToday" [class.is-past]="cell.isPast"
+              [attr.aria-current]="cell.isToday ? 'date' : null">
+            <a class="day" routerLink="/" [queryParams]="dayParams(cell.day)" [attr.aria-label]="dayLabel(cell)">
+              <span class="date">{{ cell.date }}</span>
+              @if (cell.count) {
+                <span class="count" aria-hidden="true">{{ cell.count }}
+                  @if (cell.mine) {
+                    <span class="dot"></span>
+                  }
+                </span>
+              }
+            </a>
+            @if (cell.count) {
+              <ul class="sessions">
+                @for (session of cell.sessions; track session.id) {
+                  <li>
+                    <button type="button" [class]="'session is-' + kind(session)"
+                            [class.is-mine]="!!session.participantBooking" [class.is-started]="started(session)"
+                            [attr.aria-label]="describe(session)"
+                            (click)="open.emit({ day: cell.day, session: session.id })">
+                      <span class="time">{{ time(session) }}</span>
+                      <span class="title">{{ session.title }}</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+              @if (cell.more) {
+                <a class="more" routerLink="/" [queryParams]="dayParams(cell.day)">+{{ cell.more }} more</a>
+              }
+            }
+          </td>
+        }
+      </tr>
+    }
+  </tbody>
+</table>

@@ -1,0 +1,208 @@
+:host {
+  display: block;
+}
+
+.month {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+th {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+td {
+  height: 7.5rem;
+  padding: 0.3rem;
+  vertical-align: top;
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+
+  &:first-child {
+    border-left: 0;
+  }
+
+  &.is-past {
+    background: var(--muted-tint);
+  }
+
+  &.is-other-month {
+    .date,
+    .sessions {
+      opacity: 0.45;
+    }
+  }
+
+  &.is-today .date {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+}
+
+tbody tr:first-child td {
+  border-top: 0;
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.1rem 0.2rem;
+  border-radius: 0.4rem;
+  color: var(--text);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--track);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+.date {
+  font-size: 0.85rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.count {
+  display: none;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.session {
+  display: flex;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.1rem 0.3rem;
+  border: 0;
+  border-left: 3px solid var(--status-color);
+  border-radius: 0.3rem;
+  background: var(--track);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  --status-color: var(--positive);
+
+  &.is-needs-more {
+    --status-color: var(--caution);
+  }
+
+  &.is-full {
+    --status-color: var(--muted);
+  }
+
+  &.is-mine {
+    background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+    font-weight: 600;
+  }
+
+  &.is-started {
+    opacity: 0.55;
+  }
+
+  &:hover {
+    outline: 1px solid var(--accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+  }
+
+  .time {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.more {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0 0.3rem;
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Phones: a count and a booking dot per day; the day opens with a tap */
+@media (max-width: 719px) {
+  td {
+    height: 3.75rem;
+    padding: 0.15rem;
+  }
+
+  .day {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.15rem;
+    height: 100%;
+    padding: 0.2rem 0;
+  }
+
+  .count {
+    display: inline-flex;
+  }
+
+  .sessions,
+  .more {
+    display: none;
+  }
+
+  td.is-today .date {
+    min-width: 1.4rem;
+    height: 1.4rem;
+  }
+}

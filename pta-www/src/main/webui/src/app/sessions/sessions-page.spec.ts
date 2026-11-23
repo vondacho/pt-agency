@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
-import { addDays, startOfWeek, today } from './calendar';
+import { addDays, addMonths, monthWeeks, startOfMonth, startOfWeek, today } from './calendar';
 import { Session } from './session.model';
 import { SessionsPage } from './sessions-page';
 
@@ -155,6 +155,72 @@ describe('SessionsPage', () => {
     });
   });
 
+  describe('month', () => {
+    // next month: no session of the fixtures has started
+    const first = addMonths(startOfMonth(today()), 1);
+    const grid = monthWeeks(first);
+    const tenth = addDays(first, 9);
+    const twelfth = addDays(first, 11);
+    const busy = [0, 1, 2, 3, 4].map(i =>
+      session({ id: `busy-${i}`, title: `Class ${i}`, day: tenth, start: `${String(8 + i).padStart(2, '0')}:00:00`, stop: `${String(9 + i).padStart(2, '0')}:00:00` }));
+    const month = [...busy, session({ id: 'mine', title: 'Pilates', day: twelfth, participantBooking: 'WAITING' })];
+
+    it('loads every day of the grid, from the Monday before the 1st to the Sunday after the last day', async () => {
+      const fixture = render({ view: 'month', date: tenth });
+      const request = http.expectOne(r => r.url === '/api/sessions');
+      expect(request.request.params.get('from')).toBe(grid[0][0]);
+      expect(request.request.params.get('to')).toBe(grid.at(-1)![6]);
+      request.flush(month);
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const page = fixture.nativeElement as HTMLElement;
+      expect(page.querySelectorAll('pta-month-view tbody tr').length).toBe(grid.length);
+      expect([...page.querySelectorAll('pta-month-view th')].length).toBe(7);
+    });
+
+    it('lists a few sessions per day in time order, then how many more', async () => {
+      const page = await answer(render({ view: 'month', date: tenth }), month);
+      const cell = [...page.querySelectorAll<HTMLElement>('pta-month-view td')]
+        .find(td => td.querySelector('a.day')?.getAttribute('aria-label')?.includes('5 sessions'))!;
+      expect([...cell.querySelectorAll('.session .title')].map(t => t.textContent)).toEqual(['Class 0', 'Class 1', 'Class 2']);
+      expect(cell.querySelector('.more')?.textContent?.trim()).toBe('+2 more');
+    });
+
+    it('marks the participant\'s bookings and dims the days of other months', async () => {
+      const page = await answer(render({ view: 'month', date: tenth }), month);
+      expect(page.querySelector('pta-month-view .session.is-mine .title')?.textContent).toBe('Pilates');
+      expect(page.querySelector('pta-month-view .session.is-mine')?.getAttribute('aria-label')).toContain('On the waiting list');
+      const otherMonthDays = grid.flat().filter(day => !day.startsWith(first.slice(0, 7))).length;
+      expect(page.querySelectorAll('pta-month-view td.is-other-month').length).toBe(otherMonthDays);
+    });
+
+    it('opens the day of a selected session, highlighting it', async () => {
+      const page = await answer(render({ view: 'month', date: tenth }), month);
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      page.querySelector<HTMLButtonElement>('pta-month-view .session.is-mine')!.click();
+      expect(navigate).toHaveBeenCalledWith([], { queryParams: { view: 'day', date: twelfth, focus: 'mine' } });
+    });
+
+    it('moves by whole months', async () => {
+      const page = await answer(render({ view: 'month', date: tenth }), month);
+      const next = page.querySelector('.step a[aria-label="Next month"]')!.getAttribute('href');
+      expect(next).toContain(`date=${addMonths(tenth, 1)}`);
+      expect(next).toContain('view=month');
+      expect(page.querySelector('.period')?.textContent).toMatch(/\d{4}$/);
+    });
+
+    it('stays a month on narrow screens', async () => {
+      vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+      try {
+        const page = await answer(render({ view: 'month', date: tenth }), month);
+        expect(page.querySelector('pta-month-view')).not.toBeNull();
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+  });
+
   it('shows the day view on narrow screens, whatever the requested view', async () => {
     const matchMedia = vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() });
     vi.stubGlobal('matchMedia', matchMedia);
@@ -162,7 +228,7 @@ describe('SessionsPage', () => {
       const page = await answer(render({ view: 'week', date: tuesday }), week);
       expect(page.querySelector('pta-week-view')).toBeNull();
       expect(page.querySelector('pta-day-view')).not.toBeNull();
-      expect(page.querySelector('.toggle')).toBeNull();
+      expect([...page.querySelectorAll('.toggle .segment')].map(a => a.textContent?.trim())).toEqual(['Month', 'Day']);
     } finally {
       vi.unstubAllGlobals();
     }
