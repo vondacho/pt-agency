@@ -1,6 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { AuthService } from '../auth/auth.service';
 import { addDays, dayHeading, daysBetween, isIsoDate, periodLabel, today, WEEK_LENGTH } from './calendar';
 import { Session } from './session.model';
 import { SessionCard } from './session-card';
@@ -33,6 +34,7 @@ export class SessionsPage {
   });
 
   protected readonly sessions = inject(SessionService).sessionsIn(this.period);
+  protected readonly me = inject(AuthService).me;
 
   protected readonly label = computed(() => periodLabel(this.period().from, this.period().to));
   protected readonly isCurrentWeek = computed(() => this.period().from === this.today);

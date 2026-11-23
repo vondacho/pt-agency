@@ -4,6 +4,17 @@
       <span class="logo" aria-hidden="true">PT</span>
       <span>PT Agency</span>
     </a>
+
+    @if (auth.loaded()) {
+      <nav class="account" aria-label="Account">
+        @if (auth.me().authenticated) {
+          <span class="who">{{ auth.me().name }}</span>
+          <a class="sign" href="/logout">Sign out</a>
+        } @else {
+          <a class="sign is-primary" href="/login">Sign in</a>
+        }
+      </nav>
+    }
   </div>
 </header>
 

@@ -14,6 +14,7 @@ import java.util.UUID;
  * @param availableSeats seats still free (null: unlimited)
  * @param waitlisted     participants on the waiting list
  * @param confirmed      true when the minimum number of bookings is reached
+ * @param participantBooking status of the signed-in participant's booking (DONE, PREBOOKED, WAITING), if any
  */
 public record SessionView(
         UUID id,
@@ -27,5 +28,6 @@ public record SessionView(
         int bookedSeats,
         Integer availableSeats,
         int waitlisted,
-        boolean confirmed) {
+        boolean confirmed,
+        String participantBooking) {
 }

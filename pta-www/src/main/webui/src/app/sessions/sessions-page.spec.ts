@@ -37,6 +37,7 @@ describe('SessionsPage', () => {
       fixture.componentRef.setInput('from', from);
     }
     fixture.detectChanges();
+    http.expectOne('/api/me').flush({ authenticated: false, linked: false });
     return fixture;
   }
 

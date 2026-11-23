@@ -1,4 +1,4 @@
-<article class="card" [class]="'is-' + availability().kind">
+<article class="card" [class]="'is-' + availability().kind" [class.is-mine]="!!session().participantBooking">
   <div class="time">
     <time [attr.datetime]="session().day + 'T' + start()">{{ start() }}</time>
     <span class="stop">{{ stop() }}</span>
@@ -34,4 +34,31 @@
       <span class="confirmed">Confirmed</span>
     }
   </p>
+
+  <div class="actions">
+    @if (yourBooking(); as mine) {
+      <span [class]="'mine is-' + session().participantBooking!.toLowerCase()">{{ mine }}</span>
+    }
+    @switch (action().kind) {
+      @case ('sign-in') {
+        <a class="action is-link" href="/login">Sign in to book</a>
+      }
+      @case ('not-linked') {
+        <span class="hint">Your account is not linked yet</span>
+      }
+      @default {
+        @let a = action();
+        @if (a.kind === 'book' || a.kind === 'cancel') {
+          <button type="button" class="action" [class.is-primary]="a.kind === 'book'"
+                  [disabled]="pending()" [attr.aria-busy]="pending()"
+                  (click)="run(a.kind)">
+            {{ pending() ? (a.kind === 'book' ? 'Booking…' : 'Cancelling…') : a.label }}
+          </button>
+        }
+      }
+    }
+    @if (error(); as message) {
+      <p class="error" role="alert">{{ message }}</p>
+    }
+  </div>
 </article>

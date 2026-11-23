@@ -32,10 +32,10 @@ class SessionResourceTest {
     void sessions_should_be_relayed_from_booking() {
         var day = LocalDate.of(2026, 11, 23);
         var full = new SessionView(UUID.randomUUID(), "Small group HIIT", day, LocalTime.of(18, 0), LocalTime.of(19, 0),
-                "Studio B", 2, 5, 5, 0, 1, true);
+                "Studio B", 2, 5, 5, 0, 1, true, null);
         var unlimited = new SessionView(UUID.randomUUID(), "Open gym", day, LocalTime.of(20, 0), LocalTime.of(21, 30),
-                "Studio A", null, null, 3, null, 0, true);
-        when(booking.sessions(day, day.plusDays(6))).thenReturn(Uni.createFrom().item(List.of(full, unlimited)));
+                "Studio A", null, null, 3, null, 0, true, null);
+        when(booking.sessions(day, day.plusDays(6), null)).thenReturn(Uni.createFrom().item(List.of(full, unlimited)));
 
         given()
                 .queryParam("from", "2026-11-23")
@@ -56,7 +56,7 @@ class SessionResourceTest {
 
     @Test
     void invalid_period_rejected_by_booking_should_be_relayed_as_400() {
-        when(booking.sessions(any(), any())).thenReturn(Uni.createFrom().failure(new WebApplicationException(400)));
+        when(booking.sessions(any(), any(), any())).thenReturn(Uni.createFrom().failure(new WebApplicationException(400)));
 
         given()
                 .queryParam("from", "2026-11-23")
@@ -71,7 +71,7 @@ class SessionResourceTest {
 
     @Test
     void unavailable_booking_should_answer_502() {
-        when(booking.sessions(any(), any())).thenReturn(Uni.createFrom().failure(new ProcessingException("Connection refused")));
+        when(booking.sessions(any(), any(), any())).thenReturn(Uni.createFrom().failure(new ProcessingException("Connection refused")));
 
         given()
                 .when()

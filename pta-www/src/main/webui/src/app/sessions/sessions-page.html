@@ -43,7 +43,7 @@
           </h2>
           <div class="sessions" role="list">
             @for (session of group.sessions; track session.id) {
-              <pta-session-card [session]="session" />
+              <pta-session-card [session]="session" [me]="me()" (changed)="sessions.reload()" />
             }
           </div>
         </section>

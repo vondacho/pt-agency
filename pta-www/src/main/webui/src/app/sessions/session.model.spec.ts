@@ -1,4 +1,4 @@
-import { availabilityLabel, availabilityOf, Session, shortTime } from './session.model';
+import { availabilityLabel, availabilityOf, bookingActionFor, participantBookingLabel, Session, shortTime } from './session.model';
 
 const session = (overrides: Partial<Session>): Session => ({
   id: 'id',
@@ -50,4 +50,40 @@ describe('availability', () => {
 
 describe('shortTime', () => {
   it('drops the seconds', () => expect(shortTime('07:30:00')).toBe('07:30'));
+});
+
+describe('booking action', () => {
+  const signedIn = { authenticated: true, name: 'Alice', linked: true };
+
+  it('invites anonymous visitors to sign in', () => {
+    expect(bookingActionFor(session({}), { authenticated: false, linked: false })).toEqual({ kind: 'sign-in' });
+  });
+
+  it('explains when the account is not linked to a participant', () => {
+    expect(bookingActionFor(session({}), { authenticated: true, name: 'Carol', linked: false })).toEqual({ kind: 'not-linked' });
+  });
+
+  it('offers to book a session with seats left, or to join the waiting list of a full one', () => {
+    expect(bookingActionFor(session({ availableSeats: 3 }), signedIn)).toEqual({ kind: 'book', label: 'Book' });
+    expect(bookingActionFor(session({ availableSeats: 0 }), signedIn)).toEqual({ kind: 'book', label: 'Join waiting list' });
+    expect(bookingActionFor(session({ availableSeats: undefined, maxSeats: undefined }), signedIn)).toEqual({ kind: 'book', label: 'Book' });
+  });
+
+  it('offers to cancel an own booking or to leave the waiting list', () => {
+    expect(bookingActionFor(session({ participantBooking: 'DONE' }), signedIn)).toEqual({ kind: 'cancel', label: 'Cancel booking' });
+    expect(bookingActionFor(session({ participantBooking: 'PREBOOKED' }), signedIn)).toEqual({ kind: 'cancel', label: 'Cancel booking' });
+    expect(bookingActionFor(session({ participantBooking: 'WAITING', availableSeats: 0 }), signedIn)).toEqual({ kind: 'cancel', label: 'Leave waiting list' });
+  });
+});
+
+describe('participant booking label', () => {
+  it('tells the participant where they stand', () => {
+    expect(participantBookingLabel(session({}))).toBeNull();
+    expect(participantBookingLabel(session({ participantBooking: 'DONE' }))).toBe("You're booked");
+    expect(participantBookingLabel(session({ participantBooking: 'WAITING' }))).toBe('On the waiting list');
+    expect(participantBookingLabel(session({ participantBooking: 'PREBOOKED', minSeats: 3, bookedSeats: 1 })))
+      .toBe('Pre-booked · confirmed once 2 more join');
+    expect(participantBookingLabel(session({ participantBooking: 'PREBOOKED', minSeats: 3, bookedSeats: 2 })))
+      .toBe('Pre-booked · confirmed once 1 more joins');
+  });
 });
