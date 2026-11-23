@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.inject.Inject;
+import jakarta.persistence.OptimisticLockException;
 
+import org.hibernate.StaleStateException;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.vertx.RunOnVertxContext;
 import io.quarkus.test.vertx.UniAsserter;
@@ -87,6 +90,41 @@ class PanacheSessionRepositoryAdapterTest {
         asserter.assertThat(
                 () -> repository.findByCriteria(Map.of("id", List.of(equal(SessionId.create())))),
                 found -> assertThat(found).isEmpty());
+    }
+
+    @RunOnVertxContext
+    @Test
+    void saving_a_session_again_should_update_its_bookings_in_place(UniAsserter asserter) {
+        var session = Samples.oneSmallGroupSession.get();
+        var first = Samples.oneParticipant.get();
+        session.book(first, Samples.oneYearlySubscription.get().id());
+
+        asserter.execute(() -> repository.save(session));
+        // regression: re-saving used to re-insert the existing booking rows before deleting them
+        asserter.execute(() -> session.book(Samples.oneParticipant.get(), Samples.oneYearlySubscription.get().id()));
+        asserter.assertThat(
+                () -> repository.save(session).flatMap(repository::findOne),
+                found -> assertThat(found.bookings())
+                        .extracting(Booking::id, Booking::status)
+                        .containsExactlyInAnyOrderElementsOf(session.bookings().stream()
+                                .map(b -> org.assertj.core.groups.Tuple.tuple(b.id(), b.status()))
+                                .toList()));
+    }
+
+    @RunOnVertxContext
+    @Test
+    void session_changed_concurrently_should_not_be_overwritten(UniAsserter asserter) {
+        var session = Samples.oneSmallGroupSession.get();
+        asserter.execute(() -> repository.save(session));
+        asserter.assertFailedWith(
+                () -> Panache.withTransaction(() -> PanacheSessionEntity.findByLogicalId(session.id()).firstResult()
+                        // another transaction commits a change of the same session meanwhile
+                        .call(e -> Panache.getSession().flatMap(s -> s
+                                .createNativeQuery("update training_session set version = version + 1 where logicalId = :id")
+                                .setParameter("id", session.id().id())
+                                .executeUpdate()))
+                        .invoke(e -> e.title = "changed")),
+                failure -> assertThat(failure).isInstanceOfAny(OptimisticLockException.class, StaleStateException.class));
     }
 
     @RunOnVertxContext

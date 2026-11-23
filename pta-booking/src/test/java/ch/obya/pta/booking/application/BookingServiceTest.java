@@ -15,6 +15,7 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.test.UniAssertSubscriber;
 
 import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.event.*;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
 import ch.obya.pta.booking.domain.util.BookingProblem;
@@ -51,7 +52,7 @@ public class BookingServiceTest {
     void look_up_non_existing_session_should_fail() {
         var session = SessionId.create();
 
-        when(sessionRepository.findOne(session)).thenReturn(Uni.createFrom().nothing());
+        when(sessionRepository.findOne(session)).thenReturn(Uni.createFrom().nullItem());
 
         var result = bookingService.findOne(session);
 
@@ -76,7 +77,7 @@ public class BookingServiceTest {
         var session = SessionId.create();
         var participant = Samples.oneParticipant.get();
 
-        when(sessionRepository.findOne(any())).thenReturn(Uni.createFrom().nothing());
+        when(sessionRepository.findOne(any())).thenReturn(Uni.createFrom().nullItem());
 
         var result = bookingService.book(session, participant);
 
@@ -91,7 +92,7 @@ public class BookingServiceTest {
         var participant = Samples.oneParticipant.get();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
-        when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().nothing());
+        when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().empty());
 
         var result = bookingService.book(session.id(), participant);
 
@@ -110,7 +111,7 @@ public class BookingServiceTest {
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
-        when(articleStore.eligibleSubscriptionsFor(any())).thenReturn(Multi.createFrom().nothing());
+        when(articleStore.eligibleSubscriptionsFor(any())).thenReturn(Multi.createFrom().empty());
 
         var result = bookingService.book(session.id(), participant);
 
@@ -134,9 +135,9 @@ public class BookingServiceTest {
 
         var result = bookingService.book(session.id(), participant);
 
-        result.subscribe().withSubscriber(UniAssertSubscriber.create())
-                .awaitItem()
-                .assertItem(new BookingId(session.id(), participant));
+        var booking = result.subscribe().withSubscriber(UniAssertSubscriber.create()).awaitItem().getItem();
+        assertThat(booking.id()).isEqualTo(new BookingId(session.id(), participant));
+        assertThat(booking.status()).isEqualTo(Booking.Status.DONE);
 
         verify(sessionRepository, times(1)).save(persistedSessionCaptor.capture());
         assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());
@@ -165,9 +166,9 @@ public class BookingServiceTest {
 
         var result = bookingService.book(session.id(), participant);
 
-        result.subscribe().withSubscriber(UniAssertSubscriber.create())
-                .awaitItem()
-                .assertItem(new BookingId(session.id(), participant));
+        var booking = result.subscribe().withSubscriber(UniAssertSubscriber.create()).awaitItem().getItem();
+        assertThat(booking.id()).isEqualTo(new BookingId(session.id(), participant));
+        assertThat(booking.status()).isEqualTo(Booking.Status.WAITING);
 
         verify(sessionRepository, times(1)).save(persistedSessionCaptor.capture());
         assertThat(persistedSessionCaptor.getValue().id()).isEqualTo(session.id());

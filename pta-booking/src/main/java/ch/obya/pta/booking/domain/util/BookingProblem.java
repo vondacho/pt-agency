@@ -19,7 +19,9 @@ public enum BookingProblem implements Problem {
     SubscriptionNoMoreActive("Subscription %s is no more active (%s > %s)."),
     NoBooking("Booking on session %s for participant %s does not exist."),
     NoSessionForBooking("Session with booking %s does not exist."),
-    TimeSlotInvalid("Week time slot (%s, %s, %s, %s) is not valid.");
+    TimeSlotInvalid("Week time slot (%s, %s, %s, %s) is not valid."),
+    ServiceUnavailable("Service %s is unavailable: %s"),
+    ConcurrentModification("Session %s was changed by another booking, please retry.");
 
     private final String text;
 }

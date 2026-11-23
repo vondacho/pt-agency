@@ -32,6 +32,11 @@ class PanacheBookingEntity extends PanacheEntity {
         return entity;
     }
 
+    void update(Booking booking) {
+        this.subscriptionId = booking.subscription().id();
+        this.status = booking.status();
+    }
+
     Booking toDomain(SessionId sessionId) {
         return Booking.of(
                 new BookingId(sessionId, new ParticipantId(participantId)),

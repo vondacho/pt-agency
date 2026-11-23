@@ -10,17 +10,9 @@
           },
           "participant" : {
             "$ref" : "#/components/schemas/ParticipantId"
-          }
-        }
-      },
-      "BookingId" : {
-        "type" : "object",
-        "properties" : {
-          "session" : {
-            "$ref" : "#/components/schemas/SessionId"
           },
-          "participant" : {
-            "$ref" : "#/components/schemas/ParticipantId"
+          "status" : {
+            "$ref" : "#/components/schemas/Status"
           }
         }
       },
@@ -166,6 +158,9 @@
           },
           "confirmed" : {
             "type" : "boolean"
+          },
+          "participantBooking" : {
+            "$ref" : "#/components/schemas/Status"
           }
         }
       },
@@ -176,6 +171,10 @@
             "$ref" : "#/components/schemas/UUID"
           }
         }
+      },
+      "Status" : {
+        "type" : "string",
+        "enum" : [ "DONE", "WAITING", "PREBOOKED" ]
       },
       "UUID" : {
         "type" : "string",
@@ -213,6 +212,12 @@
           "in" : "query",
           "schema" : {
             "$ref" : "#/components/schemas/LocalDate"
+          }
+        }, {
+          "name" : "participant",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/UUID"
           }
         }, {
           "name" : "to",
@@ -430,12 +435,12 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/BookingId"
+                  "$ref" : "#/components/schemas/BookingDto"
                 }
               },
               "application/problem+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/BookingId"
+                  "$ref" : "#/components/schemas/BookingDto"
                 }
               }
             }
@@ -447,7 +452,7 @@
     }
   },
   "info" : {
-    "title" : "Booking API",
+    "title" : "Booking API (test)",
     "version" : "1.0.0",
     "description" : "Booking API",
     "termsOfService" : "Your terms here",

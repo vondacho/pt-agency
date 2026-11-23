@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.vo.ParticipantId;
 
 /**
  * Read model of a training session, as presented to participants.
@@ -16,6 +17,7 @@ import ch.obya.pta.booking.domain.entity.Booking;
  * @param availableSeats seats still free (null: unlimited)
  * @param waitlisted     participants on the waiting list
  * @param confirmed      true when the minimum number of bookings is reached
+ * @param participantBooking status of the booking of the participant the list was requested for, if any
  */
 public record SessionDto(
         UUID id,
@@ -29,9 +31,14 @@ public record SessionDto(
         int bookedSeats,
         Integer availableSeats,
         int waitlisted,
-        boolean confirmed) {
+        boolean confirmed,
+        Booking.Status participantBooking) {
 
     public static SessionDto from(Session session) {
+        return from(session, null);
+    }
+
+    public static SessionDto from(Session session, ParticipantId participant) {
         var state = session.state();
         var quota = state.quota();
         var booked = (int) session.bookings().stream().filter(b -> b.status() != Booking.Status.WAITING).count();
@@ -48,6 +55,7 @@ public record SessionDto(
                 booked,
                 quota.max() == null ? null : Math.max(0, quota.max() - booked),
                 waiting,
-                quota.min() == null || booked >= quota.min());
+                quota.min() == null || booked >= quota.min(),
+                participant == null ? null : session.findBooking(participant).map(Booking::status).orElse(null));
     }
 }

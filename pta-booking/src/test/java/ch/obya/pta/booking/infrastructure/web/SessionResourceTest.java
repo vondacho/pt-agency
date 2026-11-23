@@ -13,7 +13,8 @@ import io.smallrye.mutiny.Uni;
 
 import ch.obya.pta.booking.application.BookingService;
 import ch.obya.pta.booking.domain.util.Samples;
-import ch.obya.pta.booking.domain.vo.BookingId;
+import ch.obya.pta.booking.domain.entity.Booking;
+import ch.obya.pta.booking.domain.vo.SubscriptionId;
 import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.util.CommonProblem;
@@ -80,7 +81,7 @@ public class SessionResourceTest {
         var participant = Samples.oneParticipant.get();
 
         when(bookingService.book(session.id(), participant)).thenReturn(
-                Uni.createFrom().item(new BookingId(session.id(), participant)));
+                Uni.createFrom().item(Booking.done(session.id(), participant, SubscriptionId.create())));
 
         given()
                 .when()
@@ -90,7 +91,8 @@ public class SessionResourceTest {
                 .statusCode(201)
                 .body(
                         "session.id", equalTo(session.id().id().toString()),
-                        "participant.id", equalTo(participant.id().toString()));
+                        "participant.id", equalTo(participant.id().toString()),
+                        "status", equalTo("DONE"));
     }
 
     @Test
@@ -177,4 +179,19 @@ public class SessionResourceTest {
                 .statusCode(400);
     }
 
+
+    @Test
+    void booking_a_session_changed_concurrently_should_fail_with_409() {
+        var session = onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
+        when(bookingService.book(session.id(), participant)).thenReturn(
+                Uni.createFrom().failure(new org.hibernate.StaleObjectStateException("training_session", 1L)));
+
+        given()
+                .when()
+                .post("/{id}/bookings/{participant}", session.id().id(), participant.id())
+                .then()
+                .statusCode(409)
+                .body("code", equalTo("ConcurrentModification"));
+    }
 }

@@ -9,13 +9,8 @@ components:
           $ref: "#/components/schemas/SessionId"
         participant:
           $ref: "#/components/schemas/ParticipantId"
-    BookingId:
-      type: object
-      properties:
-        session:
-          $ref: "#/components/schemas/SessionId"
-        participant:
-          $ref: "#/components/schemas/ParticipantId"
+        status:
+          $ref: "#/components/schemas/Status"
     HttpProblem:
       description: HTTP Problem Response according to RFC9457 and RFC7807
       additionalProperties: true
@@ -141,11 +136,19 @@ components:
           format: int32
         confirmed:
           type: boolean
+        participantBooking:
+          $ref: "#/components/schemas/Status"
     SessionId:
       type: object
       properties:
         id:
           $ref: "#/components/schemas/UUID"
+    Status:
+      type: string
+      enum:
+      - DONE
+      - WAITING
+      - PREBOOKED
     UUID:
       type: string
       format: uuid
@@ -182,6 +185,10 @@ paths:
         in: query
         schema:
           $ref: "#/components/schemas/LocalDate"
+      - name: participant
+        in: query
+        schema:
+          $ref: "#/components/schemas/UUID"
       - name: to
         in: query
         schema:
@@ -333,15 +340,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BookingId"
+                $ref: "#/components/schemas/BookingDto"
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/BookingId"
+                $ref: "#/components/schemas/BookingDto"
       summary: Book
       tags:
       - Session Resource
 info:
-  title: Booking API
+  title: Booking API (test)
   version: 1.0.0
   description: Booking API
   termsOfService: Your terms here

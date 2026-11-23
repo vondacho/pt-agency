@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ import io.quarkus.hibernate.reactive.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 
 import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.vo.ArticleId;
 import ch.obya.pta.booking.domain.vo.Location;
 import ch.obya.pta.booking.domain.vo.SessionId;
@@ -37,6 +39,10 @@ class PanacheSessionEntity extends PanacheEntity {
     String location;
     Integer quotaMin;
     Integer quotaMax;
+
+    /** Optimistic locking: a session changed by a concurrent booking is not silently overwritten. */
+    @Version
+    long version;
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<PanacheBookingEntity> bookings = new ArrayList<>();
@@ -113,8 +119,18 @@ class PanacheSessionEntity extends PanacheEntity {
         this.location = state.location().name();
         this.quotaMin = state.quota().min();
         this.quotaMax = state.quota().max();
-        this.bookings.clear();
-        state.bookings().forEach(b -> this.bookings.add(PanacheBookingEntity.of(this, b)));
+        mergeBookings(state.bookings());
         return this;
+    }
+
+    /**
+     * Updates the booking rows in place: replacing them all would insert the new rows before deleting the old ones
+     * (Hibernate's flush order) and violate the unique (session, participant) constraint.
+     */
+    private void mergeBookings(Set<Booking> incoming) {
+        var byParticipant = incoming.stream().collect(Collectors.toMap(b -> b.id().participant().id(), b -> b));
+        bookings.removeIf(row -> !byParticipant.containsKey(row.participantId));
+        bookings.forEach(row -> row.update(byParticipant.remove(row.participantId)));
+        byParticipant.values().forEach(b -> bookings.add(PanacheBookingEntity.of(this, b)));
     }
 }
