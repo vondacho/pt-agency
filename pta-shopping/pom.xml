@@ -8,13 +8,13 @@
         <relativePath>../pta-quarkus-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-shopping</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>pta-common</artifactId>
-            <version>0.6.0</version>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.quinoa</groupId>

@@ -10,7 +10,12 @@ VALUES
     (-3, '10000000-0000-0000-0000-000000000003', 'Bootcamp', 'Outdoor circuit training', current_date - 365, NULL, 20.00, NULL, NULL),
     (-4, '10000000-0000-0000-0000-000000000004', 'Mobility & stretching', 'Mobility, flexibility and recovery', current_date - 365, NULL, 20.00, NULL, NULL),
     (-5, '50000000-0000-0000-0000-000000000001', 'Unlimited pass', 'Unlimited access to group courses and personal training for one year', current_date - 365, NULL, 1200.00, NULL, NULL),
-    (-6, '50000000-0000-0000-0000-000000000002', 'Personal training 10x', 'Ten personal training sessions', current_date - 365, NULL, 800.00, 0, 10);
+    (-6, '50000000-0000-0000-0000-000000000002', 'Personal training 10x', 'Ten personal training sessions, to use within a year', current_date - 365, NULL, 800.00, 0, 10),
+    (-7, '50000000-0000-0000-0000-000000000003', 'Monthly group pass', 'Unlimited group courses for one month', current_date - 365, NULL, 139.00, NULL, NULL),
+    (-8, '50000000-0000-0000-0000-000000000004', '10-session group card', 'Ten group courses, to use within a year', current_date - 365, NULL, 220.00, 0, 10),
+    (-9, '50000000-0000-0000-0000-000000000005', 'Trial week', 'Discover our group courses for one week', current_date - 365, NULL, 29.00, NULL, NULL),
+    -- no longer on sale: must not appear in the shop
+    (-10, '50000000-0000-0000-0000-000000000006', 'Summer pass', 'Group courses all summer long', current_date - 365, current_date - 30, 249.00, NULL, NULL);
 
 INSERT INTO article_profile (article_id, tag)
 VALUES
@@ -19,11 +24,20 @@ VALUES
     (-3, 'SESSION'), (-3, 'COURSE'),
     (-4, 'SESSION'), (-4, 'COURSE'),
     (-5, 'SUBSCRIPTION'), (-5, 'ONE_YEAR'),
-    (-6, 'PASS');
+    (-6, 'PASS'), (-6, 'ONE_YEAR'),
+    (-7, 'SUBSCRIPTION'), (-7, 'ONE_MONTH'),
+    (-8, 'PASS'), (-8, 'ONE_YEAR'),
+    (-9, 'SUBSCRIPTION'), (-9, 'ONE_WEEK'),
+    (-10, 'SUBSCRIPTION'), (-10, 'THREE_MONTHS');
 
 INSERT INTO article_grant (article_id, tag)
 VALUES
     -- the unlimited pass gives access to every session
     (-5, 'SESSION'), (-5, 'COURSE'), (-5, 'PERSONAL_TRAINING'),
     -- the 10x pass gives access to personal training only
-    (-6, 'SESSION'), (-6, 'PERSONAL_TRAINING');
+    (-6, 'SESSION'), (-6, 'PERSONAL_TRAINING'),
+    -- group passes give access to group courses
+    (-7, 'SESSION'), (-7, 'COURSE'),
+    (-8, 'SESSION'), (-8, 'COURSE'),
+    (-9, 'SESSION'), (-9, 'COURSE'),
+    (-10, 'SESSION'), (-10, 'COURSE');

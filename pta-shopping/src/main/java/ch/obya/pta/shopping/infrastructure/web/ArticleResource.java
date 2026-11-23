@@ -1,7 +1,6 @@
 package ch.obya.pta.shopping.infrastructure.web;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +10,7 @@ import jakarta.ws.rs.*;
 import org.jboss.resteasy.reactive.ResponseStatus;
 import org.jboss.resteasy.reactive.RestQuery;
 
+import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.quarkus.resteasy.reactive.links.InjectRestLinks;
 import io.quarkus.resteasy.reactive.links.RestLink;
 import io.quarkus.resteasy.reactive.links.RestLinkType;
@@ -21,6 +21,7 @@ import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.vo.Text;
 import ch.obya.pta.common.util.search.AttributeFilter;
 import ch.obya.pta.shopping.application.ArticleService;
+import ch.obya.pta.shopping.domain.aggregate.Article;
 import ch.obya.pta.shopping.domain.repository.ArticleRepository;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
 import ch.obya.pta.shopping.domain.vo.Price;
@@ -36,13 +37,37 @@ public class ArticleResource {
     ArticleRepository repository;
 
     /**
-     * Lists articles, optionally filtered by name (`?name=eq:Unlimited pass` or `?name=like:%pass%`).
+     * Lists articles, optionally filtered (filters combine):
+     * <ul>
+     *     <li>by name: {@code ?name=eq:Unlimited pass} or {@code ?name=like:%pass%}</li>
+     *     <li>by kind, i.e. profile tags (any of them): {@code ?tag=SUBSCRIPTION&tag=PASS}</li>
+     *     <li>to the articles on sale today: {@code ?onSale=true}</li>
+     * </ul>
      */
     @GET
-    public Uni<List<ArticleDto>> list(@RestQuery List<String> name) {
-        Map<String, List<AttributeFilter>> criteria = new HashMap<>();
-        if (!name.isEmpty()) criteria.put("name", AttributeFilter.from(name, Name::new));
-        return repository.findByCriteria(criteria).map(l -> l.stream().map(ArticleDto::from).toList());
+    @WithSession // filters may run several queries: one reactive session for all of them
+    public Uni<List<ArticleDto>> list(@RestQuery List<String> name, @RestQuery List<String> tag, @RestQuery boolean onSale) {
+        Uni<List<Article>> byName = name.isEmpty() ? null
+                : repository.findByCriteria(Map.of("name", AttributeFilter.from(name, Name::new)));
+        Uni<List<Article>> byTag = tag.isEmpty() ? null
+                : repository.findAllInTags(tag.stream().map(Tag::new).toArray(Tag[]::new));
+        Uni<List<Article>> articles;
+        if (byName != null && byTag != null) {
+            articles = byName.flatMap(named -> byTag.map(tagged -> tagged.stream()
+                    .filter(a -> named.stream().anyMatch(n -> n.id().equals(a.id())))
+                    .toList()));
+        } else if (byName != null) {
+            articles = byName;
+        } else if (byTag != null) {
+            articles = byTag;
+        } else {
+            articles = repository.findAll();
+        }
+        var today = LocalDate.now();
+        return articles.map(list -> list.stream()
+                .filter(a -> !onSale || a.state().validity().includes(today))
+                .map(ArticleDto::from)
+                .toList());
     }
 
     @InjectRestLinks(RestLinkType.INSTANCE)

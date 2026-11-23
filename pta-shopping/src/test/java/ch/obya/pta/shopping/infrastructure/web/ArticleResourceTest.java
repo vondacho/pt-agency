@@ -32,10 +32,13 @@ class ArticleResourceTest {
     }
 
     @Test
-    void group_course_should_be_accessible_with_the_unlimited_pass_only() {
+    void group_course_should_be_accessible_with_group_passes_but_not_personal_training_ones() {
+        // eligibility ignores whether an article is still on sale: a summer pass bought earlier still opens courses
         given().when().get("/{id}/subscriptions", SMALL_GROUP_HIIT)
                 .then().statusCode(200)
-                .body("id", containsInAnyOrder(UNLIMITED_PASS));
+                .body("id", containsInAnyOrder(UNLIMITED_PASS,
+                        "50000000-0000-0000-0000-000000000003", "50000000-0000-0000-0000-000000000004",
+                        "50000000-0000-0000-0000-000000000005", "50000000-0000-0000-0000-000000000006"));
     }
 
     @Test
@@ -88,5 +91,31 @@ class ArticleResourceTest {
                 .when().get()
                 .then().statusCode(200)
                 .body("id.id", containsInAnyOrder(id));
+    }
+
+    @Test
+    void catalogue_lists_subscriptions_and_passes_on_sale() {
+        given().queryParam("tag", "SUBSCRIPTION").queryParam("tag", "PASS").queryParam("onSale", true)
+                .when().get()
+                .then().statusCode(200)
+                .body("id.id", containsInAnyOrder(UNLIMITED_PASS, PT_10X,
+                        "50000000-0000-0000-0000-000000000003", "50000000-0000-0000-0000-000000000004",
+                        "50000000-0000-0000-0000-000000000005"));
+    }
+
+    @Test
+    void articles_no_longer_on_sale_are_listed_unless_excluded() {
+        given().queryParam("tag", "SUBSCRIPTION")
+                .when().get()
+                .then().statusCode(200)
+                .body("id.id", hasItems("50000000-0000-0000-0000-000000000006"));
+    }
+
+    @Test
+    void filters_combine() {
+        given().queryParam("tag", "PASS").queryParam("name", "like:%group%")
+                .when().get()
+                .then().statusCode(200)
+                .body("id.id", containsInAnyOrder("50000000-0000-0000-0000-000000000004"));
     }
 }

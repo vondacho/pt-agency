@@ -226,6 +226,21 @@
               "type" : "string"
             }
           }
+        }, {
+          "name" : "onSale",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "tag",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
