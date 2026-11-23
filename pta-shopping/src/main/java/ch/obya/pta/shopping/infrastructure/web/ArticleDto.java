@@ -1,5 +1,7 @@
 package ch.obya.pta.shopping.infrastructure.web;
 
+import java.util.Set;
+
 import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.vo.Text;
@@ -8,8 +10,6 @@ import ch.obya.pta.shopping.domain.aggregate.Article;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
-
-import java.util.Set;
 
 @lombok.Builder(builderClassName = "Builder", toBuilder = true)
 public record ArticleDto(
@@ -23,6 +23,16 @@ public record ArticleDto(
         Quota quota
 ) {
     public static ArticleDto from(Article article) {
-        return ArticleDto.builder().id(article.id()).build();
+        var state = article.state();
+        return ArticleDto.builder()
+                .id(article.id())
+                .name(state.name())
+                .description(state.description())
+                .validity(state.validity())
+                .price(state.price())
+                .profile(state.profile())
+                .grants(state.grants())
+                .quota(state.quota())
+                .build();
     }
 }

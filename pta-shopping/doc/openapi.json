@@ -218,16 +218,27 @@
     "/articles" : {
       "get" : {
         "parameters" : [ {
-          "name" : "filter",
+          "name" : "name",
           "in" : "query",
           "schema" : {
-            "type" : "string"
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
           "200" : {
             "description" : "OK",
             "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ArticleDto"
+                  }
+                }
+              },
               "application/problem+json" : {
                 "schema" : {
                   "type" : "array",
@@ -257,6 +268,11 @@
           "200" : {
             "description" : "OK",
             "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ArticleId"
+                }
+              },
               "application/problem+json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ArticleId"
@@ -404,6 +420,11 @@
           "200" : {
             "description" : "OK",
             "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ArticleDto"
+                }
+              },
               "application/problem+json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ArticleDto"
@@ -461,6 +482,14 @@
           "200" : {
             "description" : "OK",
             "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ArticleId"
+                  }
+                }
+              },
               "application/problem+json" : {
                 "schema" : {
                   "type" : "array",

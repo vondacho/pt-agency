@@ -1,5 +1,17 @@
 package ch.obya.pta.shopping.application;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import jakarta.annotation.Nullable;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
+import io.smallrye.mutiny.Uni;
+
 import ch.obya.pta.common.application.EventPublisher;
 import ch.obya.pta.common.domain.entity.BaseEntity;
 import ch.obya.pta.common.domain.util.CommonProblem;
@@ -8,7 +20,6 @@ import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.vo.Text;
 import ch.obya.pta.common.domain.vo.Validity;
-import ch.obya.pta.common.util.search.FindCriteria;
 import ch.obya.pta.shopping.domain.aggregate.Article;
 import ch.obya.pta.shopping.domain.event.ArticleRemoved;
 import ch.obya.pta.shopping.domain.repository.ArticleRepository;
@@ -16,15 +27,9 @@ import ch.obya.pta.shopping.domain.util.ArticleProblem;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
-import java.time.Duration;
-import java.util.Set;
-import java.util.function.Consumer;
+import static ch.obya.pta.common.util.search.AttributeFilter.equal;
+import static ch.obya.pta.common.util.search.AttributeFilter.notEqual;
 
 @ApplicationScoped
 public class ArticleService {
@@ -35,7 +40,7 @@ public class ArticleService {
     @Inject
     EventPublisher eventPublisher;
 
-    @Transactional
+    @WithTransaction
     public Uni<ArticleId> create(Name name,
                                  Text description,
                                  Validity validity,
@@ -43,70 +48,65 @@ public class ArticleService {
                                  Set<Tag> grants,
                                  Quota quota,
                                  Price price) {
-
         return checkUniqueness(null, name, validity).replaceWith(
-                Uni.createFrom().item(
-                                new Article(
-                                        name,
-                                        description,
-                                        validity,
-                                        profile,
-                                        grants,
-                                        quota,
-                                        price
-                                ))
-                        .flatMap(c -> repository.save(c))
-                        .flatMap(c -> eventPublisher.publish(c.domainEvents()).replaceWith(c))
+                Uni.createFrom().item(() -> new Article(name.standardize(), description, validity, profile, grants, quota, price))
+                        .flatMap(a -> repository.save(a).replaceWith(a))
+                        .flatMap(a -> eventPublisher.publish(a.domainEvents()).replaceWith(a))
                         .map(Article::id));
     }
 
-    @Transactional
+    @WithTransaction
     public Uni<Void> modify(ArticleId articleId, Consumer<Article.Modifier> patches) {
         return findOne(articleId)
-                .map(c -> {
-                    var modifier = c.modify();
+                .map(a -> {
+                    var modifier = a.modify();
                     patches.accept(modifier);
                     modifier.done();
-                    return c;
+                    return a;
                 })
-                .flatMap(c -> {
-                    var state = c.state();
-                    return checkUniqueness(articleId, state.name().standardize(), state.validity()).replaceWith(c);
-                })
-                .flatMap(c -> repository.save(c))
-                .flatMap(c -> eventPublisher.publish(c.domainEvents()));
+                .flatMap(a -> checkUniqueness(articleId, a.state().name(), a.state().validity()).replaceWith(a))
+                .flatMap(a -> repository.save(a).replaceWith(a))
+                .flatMap(a -> eventPublisher.publish(a.domainEvents()));
     }
 
-    private Uni<Void> checkUniqueness(ArticleId exclude, Name name, Validity validity) {
-        return repository.findByCriteria(FindCriteria.from("""
-                    name:%s,
-                    """.formatted(name.standardize())))
-                .select().where(c -> !c.id().equals(exclude))
-                .onItem()
-                .failWith(ArticleProblem.AlreadyExisting.toException(name.standardize(), validity.from(), validity.to()))
-                .ifNoItem().after(Duration.ofMillis(100))
-                .recoverWithCompletion().toUni().replaceWithVoid();
+    /**
+     * An article name is unique: another article with the same (standardized) name is a conflict.
+     */
+    private Uni<Void> checkUniqueness(@Nullable ArticleId exclude, Name name, Validity validity) {
+        var standardized = name.standardize();
+        var criteria = exclude == null
+                ? Map.of("name", List.of(equal(standardized)))
+                : Map.of("name", List.of(equal(standardized)), "id", List.of(notEqual(exclude)));
+        return repository.findByCriteria(criteria)
+                .flatMap(found -> found.isEmpty()
+                        ? Uni.createFrom().voidItem()
+                        : Uni.createFrom().failure(ArticleProblem.AlreadyExisting
+                                .toException(standardized.content(), validity.from(), validity.to()).get()));
     }
 
-    @Transactional
+    @WithTransaction
     public Uni<Void> remove(ArticleId articleId, Boolean force) {
         return findOne(articleId)
-                .flatMap(c -> (force ? repository.remove(articleId) : repository.save(c.close())).replaceWith(c))
-                .flatMap(c -> eventPublisher.publish(force ? Set.of(new ArticleRemoved(articleId)) : c.domainEvents()));
+                .flatMap(a -> (force ? repository.remove(articleId) : repository.save(a.close()).replaceWithVoid()).replaceWith(a))
+                .flatMap(a -> eventPublisher.publish(force ? Set.of(new ArticleRemoved(articleId)) : a.domainEvents()));
     }
 
+    @WithTransaction
     public Uni<Article> findOne(ArticleId id) {
         return EntityFinder.find(Article.class, id, repository::findOne, CommonProblem.EntityNotFound);
     }
 
-    public Multi<ArticleId> eligibleSubscriptionsFor(ArticleId article) {
-        var subscriptions = repository.findAllInTags(
-                Tag.Default.SUBSCRIPTION.toTag(),
-                Tag.Default.PASS.toTag());
-
+    /**
+     * Subscriptions and passes that give access to the given article: their grants cover the article's profile.
+     */
+    @WithTransaction
+    public Uni<List<ArticleId>> eligibleSubscriptionsFor(ArticleId article) {
         return findOne(article)
-                .map(Article::state)
-                .toMulti().flatMap(a -> subscriptions.select().where(c -> c.state().grants().containsAll(a.profile())))
-                .map(BaseEntity::id);
+                .map(a -> a.state().profile() == null ? Set.<Tag>of() : a.state().profile())
+                .flatMap(profile -> repository.findAllInTags(Tag.Default.SUBSCRIPTION.toTag(), Tag.Default.PASS.toTag())
+                        .map(subscriptions -> subscriptions.stream()
+                                .filter(s -> s.state().grants() != null && s.state().grants().containsAll(profile))
+                                .map(BaseEntity::id)
+                                .toList()));
     }
 }

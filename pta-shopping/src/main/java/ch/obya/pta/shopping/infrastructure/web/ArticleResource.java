@@ -1,28 +1,32 @@
 package ch.obya.pta.shopping.infrastructure.web;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+
+import org.jboss.resteasy.reactive.ResponseStatus;
+import org.jboss.resteasy.reactive.RestQuery;
+
+import io.quarkus.resteasy.reactive.links.InjectRestLinks;
+import io.quarkus.resteasy.reactive.links.RestLink;
+import io.quarkus.resteasy.reactive.links.RestLinkType;
+import io.smallrye.mutiny.Uni;
 
 import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.domain.vo.Quota;
 import ch.obya.pta.common.domain.vo.Text;
-import ch.obya.pta.common.util.search.FindCriteria;
-import ch.obya.pta.shopping.domain.repository.ArticleRepository;
+import ch.obya.pta.common.util.search.AttributeFilter;
 import ch.obya.pta.shopping.application.ArticleService;
+import ch.obya.pta.shopping.domain.repository.ArticleRepository;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
-import io.quarkus.resteasy.reactive.links.InjectRestLinks;
-import io.quarkus.resteasy.reactive.links.RestLink;
-import io.quarkus.resteasy.reactive.links.RestLinkType;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import org.jboss.resteasy.reactive.ResponseStatus;
-import org.jboss.resteasy.reactive.RestQuery;
 
-import java.time.LocalDate;
-
-@Produces("application/problem+json")
+@Produces({"application/json", "application/problem+json"})
 @Path("/articles")
 public class ArticleResource {
 
@@ -31,9 +35,14 @@ public class ArticleResource {
     @Inject
     ArticleRepository repository;
 
+    /**
+     * Lists articles, optionally filtered by name (`?name=eq:Unlimited pass` or `?name=like:%pass%`).
+     */
     @GET
-    public Multi<ArticleDto> list(@RestQuery String filter) {
-        return repository.findByCriteria(FindCriteria.from(filter)).map(ArticleDto::from);
+    public Uni<List<ArticleDto>> list(@RestQuery List<String> name) {
+        Map<String, List<AttributeFilter>> criteria = new HashMap<>();
+        if (!name.isEmpty()) criteria.put("name", AttributeFilter.from(name, Name::new));
+        return repository.findByCriteria(criteria).map(l -> l.stream().map(ArticleDto::from).toList());
     }
 
     @InjectRestLinks(RestLinkType.INSTANCE)
@@ -41,12 +50,15 @@ public class ArticleResource {
     @GET
     @Path("{id}")
     public Uni<ArticleDto> get(ArticleId id) {
-        return repository.findOne(id).map(ArticleDto::from);
+        return service.findOne(id).map(ArticleDto::from);
     }
 
+    /**
+     * Subscription and pass articles which give access to the given article.
+     */
     @GET
     @Path("/{id}/subscriptions")
-    public Multi<ArticleId> eligibleSubscriptionsFor(ArticleId id) {
+    public Uni<List<ArticleId>> eligibleSubscriptionsFor(ArticleId id) {
         return service.eligibleSubscriptionsFor(id);
     }
 
@@ -88,7 +100,6 @@ public class ArticleResource {
                             @RestQuery Quota quota,
                             @RestQuery String profile,
                             @RestQuery String grants) {
-
         return service.modify(id, article -> {
             if (name != null || description != null) article.rename(name, description);
             if (price != null) article.price(price);
@@ -108,6 +119,7 @@ public class ArticleResource {
         return service.modify(id, article -> article.rename(name, description));
     }
 
+    @ResponseStatus(204)
     @DELETE
     @Path("{id}")
     public Uni<Void> remove(ArticleId id, @RestQuery Boolean force) {
