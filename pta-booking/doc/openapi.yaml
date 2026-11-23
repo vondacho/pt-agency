@@ -348,7 +348,7 @@ paths:
       tags:
       - Session Resource
 info:
-  title: Booking API (test)
+  title: Booking API
   version: 1.0.0
   description: Booking API
   termsOfService: Your terms here

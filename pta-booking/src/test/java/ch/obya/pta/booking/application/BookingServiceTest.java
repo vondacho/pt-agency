@@ -20,6 +20,7 @@ import ch.obya.pta.booking.domain.event.*;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
 import ch.obya.pta.booking.domain.util.BookingProblem;
 import ch.obya.pta.booking.domain.util.Samples;
+import ch.obya.pta.booking.domain.vo.ArticleId;
 import ch.obya.pta.booking.domain.vo.BookingId;
 import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.common.application.EventPublisher;
@@ -112,6 +113,26 @@ public class BookingServiceTest {
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
         when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
         when(articleStore.eligibleSubscriptionsFor(any())).thenReturn(Multi.createFrom().empty());
+
+        var result = bookingService.book(session.id(), participant);
+
+        result.subscribe().withSubscriber(UniAssertSubscriber.create())
+                .awaitFailure()
+                .assertFailedWith(BookingProblem.Exception.class,
+                        "No active subscription of participant %s applies to session %s (article %s)"
+                                .formatted(participant, session.id(), session.articleId()));
+    }
+
+    @Test
+    void booking_session_with_another_subscription_than_the_eligible_ones_should_fail() {
+        var session = Samples.onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
+        var subscription = Samples.oneYearlySubscription.get();
+
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
+        when(clientProfile.validSubscriptionsOf(any(), any())).thenReturn(Multi.createFrom().items(subscription));
+        // shopping lists a pass the participant does not hold (regression: used to fail with a null mapping, 500)
+        when(articleStore.eligibleSubscriptionsFor(any())).thenReturn(Multi.createFrom().items(ArticleId.create()));
 
         var result = bookingService.book(session.id(), participant);
 

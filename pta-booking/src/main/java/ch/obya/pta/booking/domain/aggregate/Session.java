@@ -77,40 +77,44 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
         return Set.copyOf(state.bookings);
     }
 
+    /**
+     * Books a seat for the participant: confirmed once the session's minimum is reached (the booking that reaches it
+     * confirms the pre-booked ones), pre-booked below it, on the waiting list when no seat is left.
+     * Booking again leaves an existing booking unchanged.
+     */
     public Booking book(ParticipantId participant, SubscriptionId subscription) {
         var existingBooking = findBooking(participant);
+        if (existingBooking.isPresent()) {
+            return existingBooking.get();
+        }
+
+        // participants on the waiting list hold no seat
+        var seated = (int) state.bookings.stream().filter(b -> b.status() != WAITING).count();
 
         Booking booking;
-        if (existingBooking.isPresent()) {
-            state.bookings.removeIf(b -> b.id().equals(existingBooking.get().id()));
-            booking = existingBooking.get().confirmed();
+        if (state.quota.inQuota(seated)) {
+            if (state.quota.moreThanMaxQuota(seated + 1)) {
+                booking = Booking.waiting(id, participant, subscription);
+                andEvent(new ParticipantWaitlisted(this.id, participant));
+            } else {
+                booking = Booking.done(id, participant, subscription);
+                andEvent(new SessionBooked(this.id, participant),
+                        new SubscriptionCharged(subscription, participant));
+            }
+        } else if (state.quota.inQuota(seated + 1)) {
+            var confirmedBookings = state.bookings.stream().map(Booking::confirmed).toList();
+            state.bookings.clear();
+            state.bookings.addAll(confirmedBookings);
+            booking = Booking.done(id, participant, subscription);
+            confirmedBookings.forEach(it ->
+                    andEvent(new SessionBooked(this.id, it.id().participant()),
+                            new SubscriptionCharged(it.subscription(), it.id().participant()))
+            );
             andEvent(new SessionBooked(this.id, participant),
                     new SubscriptionCharged(subscription, participant));
         } else {
-            if (state.quota.inQuota(state.bookings.size())) {
-                if (state.quota.moreThanMaxQuota(state.bookings.size() + 1)) {
-                    booking = Booking.waiting(id, participant, subscription);
-                    andEvent(new ParticipantWaitlisted(this.id, participant));
-                } else {
-                    booking = Booking.done(id, participant, subscription);
-                    andEvent(new SessionBooked(this.id, participant),
-                            new SubscriptionCharged(subscription, participant));
-                }
-            } else if (state.quota.inQuota(state.bookings.size() + 1)) {
-                var confirmedBookings = state.bookings.stream().map(Booking::confirmed).toList();
-                state.bookings.clear();
-                state.bookings.addAll(confirmedBookings);
-                booking = Booking.done(id, participant, subscription);
-                confirmedBookings.forEach(it ->
-                        andEvent(new SessionBooked(this.id, it.id().participant()),
-                                new SubscriptionCharged(it.subscription(), it.id().participant()))
-                );
-                andEvent(new SessionBooked(this.id, participant),
-                        new SubscriptionCharged(subscription, participant));
-            } else {
-                booking = Booking.prebooked(id, participant, subscription);
-                andEvent(new SessionPrebooked(this.id, participant));
-            }
+            booking = Booking.prebooked(id, participant, subscription);
+            andEvent(new SessionPrebooked(this.id, participant));
         }
         state.bookings.add(booking);
         return booking;
@@ -124,7 +128,10 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
         andEvent(new BookingCancelled(this.id, participant),
                 new SubscriptionCredited(booking.get().subscription(), participant));
 
-        promoteOneWaitingParticipant();
+        // only a cancelled seat can go to the waiting list; leaving the waiting list frees none
+        if (booking.get().status() != WAITING) {
+            promoteOneWaitingParticipant();
+        }
     }
 
     private void promoteOneWaitingParticipant() {

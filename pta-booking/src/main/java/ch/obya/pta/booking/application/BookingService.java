@@ -3,7 +3,6 @@ package ch.obya.pta.booking.application;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -89,9 +88,10 @@ public class BookingService {
     }
 
     private Multi<Subscription> eligibleSubscriptions(Map<ArticleId, Subscription> subscriptions, Session session) {
+        // keep the eligible articles the participant holds a subscription to (Mutiny items can't be null)
         return articleStore.eligibleSubscriptionsFor(session.articleId())
-                .map(subscriptions::get)
-                .select().where(Objects::nonNull);
+                .select().where(subscriptions::containsKey)
+                .map(subscriptions::get);
     }
 
     private Uni<Booking> makeBooking(Session session, ParticipantId participant, SubscriptionId subscriptionId) {
