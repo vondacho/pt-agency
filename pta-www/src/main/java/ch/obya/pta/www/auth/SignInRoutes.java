@@ -14,6 +14,7 @@ import io.vertx.ext.web.Router;
 public class SignInRoutes {
 
     void register(@Observes Router router) {
-        router.get("/login").order(-100).handler(rc -> rc.redirect("/"));
+        // default order: after the security handlers, so the permission on /login runs the sign-in first
+        router.get("/login").handler(rc -> rc.redirect("/"));
     }
 }
