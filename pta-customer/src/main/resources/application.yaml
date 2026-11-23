@@ -27,3 +27,9 @@ quarkus:
     always-include: true
   jackson:
     serialization-inclusion: non-null
+  # pta-shopping: terms of the articles subscribed to (duration, sessions included)
+  rest-client:
+    shopping:
+      url: ${PTA_SHOPPING_URL:http://localhost:8083}
+      connect-timeout: 2000
+      read-timeout: 5000

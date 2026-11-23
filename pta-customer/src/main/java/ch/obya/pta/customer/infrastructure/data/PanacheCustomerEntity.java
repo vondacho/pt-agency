@@ -46,6 +46,10 @@ class PanacheCustomerEntity extends PanacheEntity {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<PanacheSubscriptionEntity> subscriptions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    // a Set: Hibernate cannot fetch two eager lists ("bags") of one entity at once
+    java.util.Set<PanacheSubscriptionRequestEntity> requests = new java.util.HashSet<>();
+
     static PanacheQuery<PanacheCustomerEntity> findByLogicalId(CustomerId id) {
         return find("logicalId", id.id());
     }
@@ -134,6 +138,9 @@ class PanacheCustomerEntity extends PanacheEntity {
             notes
         );
         subscriptions.forEach(s -> customer.add(s.toDomain()));
+        requests.stream()
+                .sorted(java.util.Comparator.comparing((PanacheSubscriptionRequestEntity r) -> r.requestedAt))
+                .forEach(r -> customer.restore(r.toDomain()));
         // Rehydration is not a creation: drop the CustomerCreated event raised by the constructor.
         customer.domainEvents();
         return customer;
@@ -150,6 +157,12 @@ class PanacheCustomerEntity extends PanacheEntity {
         subscriptions.removeIf(row -> !incoming.containsKey(row.logicalId));
         subscriptions.forEach(row -> row.update(incoming.remove(row.logicalId)));
         incoming.values().forEach(s -> subscriptions.add(PanacheSubscriptionEntity.of(this, s)));
+        // requests too: updated in place, added when new (they are never removed by the domain)
+        var incomingRequests = customer.requests().stream()
+                .collect(java.util.stream.Collectors.toMap(r -> r.id().id(), r -> r));
+        requests.removeIf(row -> !incomingRequests.containsKey(row.logicalId));
+        requests.forEach(row -> row.update(incomingRequests.remove(row.logicalId)));
+        incomingRequests.values().forEach(r -> requests.add(PanacheSubscriptionRequestEntity.of(this, r)));
         return this;
     }
 

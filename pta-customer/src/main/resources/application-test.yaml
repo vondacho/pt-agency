@@ -1,4 +1,9 @@
 quarkus:
+  # Random test ports: tests can run next to the dev stack
+  http:
+    test-port: 0
+  management:
+    test-port: 0
   log:
     level: INFO
     category:
@@ -6,6 +11,10 @@ quarkus:
   hibernate-orm:
     log:
       sql: true
+  # pta-shopping is stubbed by the WireMock Dev Service
+  rest-client:
+    shopping:
+      url: http://localhost:${quarkus.wiremock.devservices.port}
   # Tests run the real Flyway migrations and the seed data
   flyway:
     locations: db/migration,db/dev

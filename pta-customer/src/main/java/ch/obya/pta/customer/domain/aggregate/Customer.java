@@ -6,6 +6,7 @@ import ch.obya.pta.common.domain.vo.Name;
 import ch.obya.pta.common.util.validation.Checker;
 import ch.obya.pta.customer.domain.util.CustomerProblem;
 import ch.obya.pta.customer.domain.entity.Subscription;
+import ch.obya.pta.customer.domain.entity.SubscriptionRequest;
 import ch.obya.pta.customer.domain.event.CustomerCreated;
 import ch.obya.pta.customer.domain.event.CustomerModified;
 import ch.obya.pta.customer.domain.util.PhoneNumberChecker;
@@ -13,15 +14,19 @@ import ch.obya.pta.customer.domain.vo.*;
 import lombok.AccessLevel;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ch.obya.pta.common.domain.util.CommonProblem.ifNullThrow;
+import static ch.obya.pta.common.domain.util.CommonProblem.ifThrow;
 
 public class Customer extends BaseEntity<Customer, CustomerId, Customer.State> {
 
     private final Set<Subscription> subscriptions = new HashSet<>();
+    private final List<SubscriptionRequest> requests = new ArrayList<>();
 
     @lombok.Builder(builderClassName = "Builder", toBuilder = true, access = AccessLevel.PRIVATE)
     public record State(
@@ -98,6 +103,66 @@ public class Customer extends BaseEntity<Customer, CustomerId, Customer.State> {
                     throw CustomerProblem.SubscriptionOverlapsExisting.toException(other.id(), overlapped.id()).get();
                 });
         this.subscriptions.add(other);
+    }
+
+    public List<SubscriptionRequest> requests() {
+        return List.copyOf(requests);
+    }
+
+    /**
+     * Requests a subscription to the article; one pending request per article at most.
+     */
+    public SubscriptionRequest request(ArticleId articleId) {
+        requests.stream()
+                .filter(r -> r.isPending() && r.articleId().equals(articleId))
+                .findFirst()
+                .ifPresent(r -> {
+                    throw CustomerProblem.RequestAlreadyPending.toException(articleId.id()).get();
+                });
+        var request = SubscriptionRequest.pending(articleId);
+        requests.add(request);
+        return request;
+    }
+
+    /** Cancels a pending request. */
+    public SubscriptionRequest cancelRequest(SubscriptionRequestId id) {
+        var request = pendingRequest(id);
+        return replace(request, request.cancelled());
+    }
+
+    /**
+     * Confirms a pending request with the subscription the agency sold: it must be for the requested article,
+     * and it must not overlap an existing subscription to the same article.
+     */
+    public SubscriptionRequest confirm(SubscriptionRequestId id, Subscription subscription) {
+        var request = pendingRequest(id);
+        ifThrow(() -> !request.articleId().equals(subscription.articleId()),
+                CustomerProblem.RequestOfOtherArticle.toException(id.id(), request.articleId().id(), subscription.articleId().id()));
+        add(subscription);
+        return replace(request, request.confirmed(subscription.id()));
+    }
+
+    public SubscriptionRequest requestAt(SubscriptionRequestId id) {
+        return requests.stream()
+                .filter(r -> r.id().equals(id))
+                .findFirst()
+                .orElseThrow(CommonProblem.EntityNotFound.toException("SubscriptionRequest", id.id()));
+    }
+
+    /** Restores a request as stored, for rehydration only. */
+    public void restore(SubscriptionRequest request) {
+        requests.add(request);
+    }
+
+    private SubscriptionRequest pendingRequest(SubscriptionRequestId id) {
+        var request = requestAt(id);
+        ifThrow(() -> !request.isPending(), CustomerProblem.RequestNotPending.toException(id.id(), request.status()));
+        return request;
+    }
+
+    private SubscriptionRequest replace(SubscriptionRequest current, SubscriptionRequest next) {
+        requests.set(requests.indexOf(current), next);
+        return next;
     }
 
     public Subscription subscriptionAt(SubscriptionId subscriptionId) {

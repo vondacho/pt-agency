@@ -19,6 +19,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import ch.obya.pta.customer.domain.entity.Subscription;
+import ch.obya.pta.customer.domain.entity.SubscriptionRequest;
+import ch.obya.pta.customer.domain.vo.ArticleId;
+import ch.obya.pta.customer.domain.vo.SubscriptionRequestId;
+import ch.obya.pta.common.domain.vo.Validity;
+import java.time.LocalDate;
 import static ch.obya.pta.common.util.search.AttributeFilter.equal;
 import static ch.obya.pta.common.util.search.AttributeFilter.notEqual;
 
@@ -101,5 +107,47 @@ public class CustomerService {
     @WithTransaction
     public Uni<Customer> findOne(CustomerId id) {
         return EntityFinder.find(Customer.class, id, repository::findOne, CommonProblem.EntityNotFound);
+    }
+
+    @Inject
+    ArticleCatalogue catalogue;
+
+    /** A customer requests a subscription article, to be confirmed by the agency. */
+    @WithTransaction
+    public Uni<SubscriptionRequest> requestSubscription(CustomerId customerId, ArticleId article) {
+        return catalogue.termsOf(article) // the article must exist
+                .flatMap(terms -> findOne(customerId))
+                .flatMap(c -> {
+                    var request = c.request(article);
+                    return repository.save(c).replaceWith(request);
+                });
+    }
+
+    @WithTransaction
+    public Uni<SubscriptionRequest> cancelSubscriptionRequest(CustomerId customerId, SubscriptionRequestId request) {
+        return findOne(customerId)
+                .flatMap(c -> {
+                    var cancelled = c.cancelRequest(request);
+                    return repository.save(c).replaceWith(cancelled);
+                });
+    }
+
+    /**
+     * The agency confirms a request (paid at the desk): the subscription starts on {@code from} (default today)
+     * for the article's duration, with the sessions the article includes.
+     */
+    @WithTransaction
+    public Uni<SubscriptionRequest> confirmSubscriptionRequest(CustomerId customerId, SubscriptionRequestId request, LocalDate from) {
+        var start = from != null ? from : LocalDate.now();
+        return findOne(customerId)
+                .flatMap(c -> {
+                    var article = c.requestAt(request).articleId();
+                    return catalogue.termsOf(article).map(terms -> {
+                        var subscription = new Subscription(
+                                new Validity(start, start.plus(terms.duration()).minusDays(1)),
+                                terms.quota(), terms.credits(), article);
+                        return c.confirm(request, subscription);
+                    }).flatMap(confirmed -> repository.save(c).replaceWith(confirmed));
+                });
     }
 }

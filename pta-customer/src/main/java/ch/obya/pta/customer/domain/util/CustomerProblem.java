@@ -18,7 +18,12 @@ public enum CustomerProblem implements Problem {
     PhoneNumberInvalid("Phone number %s is not valid and should match %s or %s."),
     SubscriptionWithoutCredit("Subscription %s does not have credits."),
     SubscriptionOverlapsExisting("Subscription %s overlaps existing subscription %s."),
-    AlreadyExisting("Customer (%s,%s,%s,%s) already exists.");
+    AlreadyExisting("Customer (%s,%s,%s,%s) already exists."),
+    RequestAlreadyPending("A request for article %s is already pending."),
+    RequestNotPending("Subscription request %s is %s, not pending."),
+    RequestOfOtherArticle("Subscription request %s is for article %s, not %s."),
+    UnknownArticle("Article %s is not in the catalogue."),
+    ServiceUnavailable("Service %s is unavailable: %s");
 
     private final String text;
 }
