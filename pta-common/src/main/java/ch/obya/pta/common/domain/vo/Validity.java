@@ -13,14 +13,14 @@ public record Validity(LocalDate from, LocalDate to) {
         ifThrow(() -> to != null && from.isAfter(to), CommonProblem.ValidityInvalid.toException(from, to));
     }
 
+    /** True when the date is within the validity; an open-ended validity ({@code to == null}) never ends. */
     public boolean includes(LocalDate date) {
-        return !(date.isBefore(from) || (to == null || date.isAfter(to)));
+        return !date.isBefore(from) && (to == null || !date.isAfter(to));
     }
 
+    /** True when both validities share at least one day (open-ended ones never end). */
     public boolean overlappedBy(Validity other) {
-        return includes(other.from)
-                || (other.to != null && includes(other.to))
-                || (other.from.isBefore(from) && (other.to == null || other.to.isAfter(to)));
+        return (other.to == null || !other.to.isBefore(from)) && (to == null || !to.isBefore(other.from));
     }
 
     public Validity closeOn(LocalDate date) {

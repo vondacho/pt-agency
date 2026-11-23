@@ -10,7 +10,7 @@
         <relativePath>../pta-quarkus-parent/pom.xml</relativePath>
     </parent>
     <artifactId>pta-common</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
