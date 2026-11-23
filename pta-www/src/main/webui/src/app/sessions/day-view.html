@@ -1,0 +1,42 @@
+@if (daySessions().length === 0) {
+  <div class="notice">
+    <p><strong>No sessions on this day.</strong></p>
+  </div>
+} @else {
+  <div class="day" [style.--hour-height.px]="hourHeight">
+    <div class="hours" aria-hidden="true" [style.height.px]="gridHeight()">
+      @for (hour of hours(); track hour) {
+        <span class="hour" [style.top.px]="(hour - axis().startHour) * hourHeight">{{ (hour < 10 ? '0' : '') + hour }}:00</span>
+      }
+    </div>
+
+    <div class="column" role="list" aria-label="Sessions of the day" [style.height.px]="gridHeight()">
+      @if (nowTop() !== null) {
+        <div class="now" [style.top.px]="nowTop()" aria-hidden="true"></div>
+      }
+      @for (block of blocks(); track block.session.id) {
+        @let session = block.session;
+        <article role="listitem" [attr.data-session]="session.id"
+                 [class]="'block is-' + kind(session)"
+                 [class.is-mine]="!!session.participantBooking"
+                 [class.is-focused]="session.id === focus()"
+                 [class.is-started]="started(session)"
+                 [style.top.px]="px(block.top)" [style.min-height.px]="px(block.height) - 4"
+                 [style.left]="'calc(' + (block.lane * 100) / block.lanes + '% + 4px)'"
+                 [style.width]="'calc(' + 100 / block.lanes + '% - 8px)'">
+          <header class="head">
+            <h3 class="title">{{ session.title }}</h3>
+            <span class="badge">{{ label(session) }}</span>
+          </header>
+          <p class="meta">
+            <time [attr.datetime]="session.day + 'T' + session.start">{{ times(session) }}</time>
+            <span class="sep" aria-hidden="true">·</span>{{ session.location }}
+            <span class="sep" aria-hidden="true">·</span>{{ seats(session) }}
+          </p>
+          <pta-session-actions class="actions" [session]="session" [me]="me()" [started]="started(session)"
+                               (changed)="changed.emit()" />
+        </article>
+      }
+    </div>
+  </div>
+}

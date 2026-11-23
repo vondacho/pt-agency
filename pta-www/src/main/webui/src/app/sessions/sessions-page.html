@@ -1,22 +1,54 @@
 <section class="page" aria-labelledby="page-title">
   <header class="page-header">
     <div>
-      <h1 id="page-title">Upcoming sessions</h1>
-      <p class="period" aria-live="polite">{{ label() }}</p>
+      <h1 id="page-title">Sessions</h1>
+      <p class="period" aria-live="polite">{{ title() }}</p>
     </div>
 
-    <nav class="week-nav" aria-label="Choose week">
-      @if (previousFrom(); as previous) {
-        <a class="button" routerLink="/" [queryParams]="{ from: previous }" aria-label="Previous week">‹ <span>Previous</span></a>
-      } @else if (!isCurrentWeek()) {
-        <a class="button" routerLink="/" aria-label="Previous week">‹ <span>Previous</span></a>
-      } @else {
-        <span class="button" aria-disabled="true">‹ <span>Previous</span></span>
+    <div class="controls">
+      @if (!narrow()) {
+        <nav class="toggle" aria-label="View">
+          <a class="segment" routerLink="/" [queryParams]="params('week', selected())"
+             [class.is-active]="effectiveView() === 'week'" [attr.aria-current]="effectiveView() === 'week' ? 'page' : null">Week</a>
+          <a class="segment" routerLink="/" [queryParams]="params('day', selected())"
+             [class.is-active]="effectiveView() === 'day'" [attr.aria-current]="effectiveView() === 'day' ? 'page' : null">Day</a>
+        </nav>
       }
-      <a class="button" routerLink="/" [class.is-current]="isCurrentWeek()" [attr.aria-current]="isCurrentWeek() ? 'page' : null">This week</a>
-      <a class="button" routerLink="/" [queryParams]="{ from: nextFrom() }" aria-label="Next week"><span>Next</span> ›</a>
-    </nav>
+
+      <nav class="step" [attr.aria-label]="effectiveView() === 'week' ? 'Choose week' : 'Choose day'">
+        @if (previous(); as previousDate) {
+          <a class="button" routerLink="/" [queryParams]="params(effectiveView(), previousDate)"
+             [attr.aria-label]="effectiveView() === 'week' ? 'Previous week' : 'Previous day'">‹</a>
+        } @else {
+          <span class="button" aria-disabled="true">‹</span>
+        }
+        <a class="button" routerLink="/" [queryParams]="params(effectiveView(), today)"
+           [class.is-current]="isCurrent()">{{ effectiveView() === 'week' ? 'This week' : 'Today' }}</a>
+        <a class="button" routerLink="/" [queryParams]="params(effectiveView(), next())"
+           [attr.aria-label]="effectiveView() === 'week' ? 'Next week' : 'Next day'">›</a>
+      </nav>
+    </div>
   </header>
+
+  @if (effectiveView() === 'day') {
+    <nav class="strip" aria-label="Days of the week">
+      @for (d of strip(); track d.day) {
+        <a class="strip-day" routerLink="/" [queryParams]="params('day', d.day)"
+           [class.is-selected]="d.isSelected" [class.is-today]="d.isToday" [class.is-past]="d.isPast"
+           [attr.aria-current]="d.isSelected ? 'date' : null"
+           [attr.aria-label]="d.weekday + ' ' + d.date + ': ' + d.count + (d.count === 1 ? ' session' : ' sessions') + (d.mine ? ', with your booking' : '')">
+          <span class="weekday">{{ d.weekday }}</span>
+          <span class="date">{{ d.date }}</span>
+          <span class="count" aria-hidden="true">
+            {{ d.count || '–' }}
+            @if (d.mine) {
+              <span class="dot"></span>
+            }
+          </span>
+        </a>
+      }
+    </nav>
+  }
 
   @if (sessions.error()) {
     <div class="notice is-error" role="alert">
@@ -24,30 +56,21 @@
       <button type="button" class="button" (click)="sessions.reload()">Try again</button>
     </div>
   } @else if (sessions.isLoading() && sessionCount() === 0) {
-    <div class="days" aria-busy="true" aria-label="Loading sessions">
-      @for (placeholder of [1, 2, 3]; track placeholder) {
-        <div class="skeleton"></div>
-      }
-    </div>
-  } @else if (sessionCount() === 0) {
-    <div class="notice">
-      <p><strong>No sessions scheduled this week.</strong></p>
-      <p>Have a look at the <a routerLink="/" [queryParams]="{ from: nextFrom() }">following week</a>.</p>
-    </div>
+    <div class="skeleton" aria-busy="true" aria-label="Loading sessions"></div>
+  } @else if (effectiveView() === 'week') {
+    @if (sessionCount() === 0) {
+      <div class="notice">
+        <p><strong>No sessions scheduled this week.</strong></p>
+        <p>Have a look at the <a routerLink="/" [queryParams]="params('week', next())">following week</a>.</p>
+      </div>
+    } @else {
+      <pta-week-view [class.is-refreshing]="sessions.isLoading()"
+                     [days]="days()" [sessions]="sessions.value()" [axis]="axis()" [today]="today" [now]="now()"
+                     (open)="openDay($event)" />
+    }
   } @else {
-    <div class="days" [class.is-refreshing]="sessions.isLoading()">
-      @for (group of days(); track group.day) {
-        <section class="day" [attr.aria-labelledby]="'day-' + group.day">
-          <h2 [id]="'day-' + group.day">
-            {{ group.relative }} <span class="date">{{ group.date }}</span>
-          </h2>
-          <div class="sessions" role="list">
-            @for (session of group.sessions; track session.id) {
-              <pta-session-card [session]="session" [me]="me()" (changed)="sessions.reload()" />
-            }
-          </div>
-        </section>
-      }
-    </div>
+    <pta-day-view [class.is-refreshing]="sessions.isLoading()"
+                  [day]="selected()" [sessions]="sessions.value()" [axis]="axis()" [today]="today" [now]="now()"
+                  [me]="me()" [focus]="focus()" (changed)="sessions.reload()" />
   }
 </section>

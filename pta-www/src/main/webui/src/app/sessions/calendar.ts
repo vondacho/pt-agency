@@ -39,6 +39,43 @@ export function dayHeading(isoDate: string, reference: string = today(), locale?
   };
 }
 
+/** Monday of the week the date belongs to (weeks run Monday to Sunday). */
+export function startOfWeek(isoDate: string): string {
+  const mondayBased = (parse(isoDate).getDay() + 6) % 7;
+  return addDays(isoDate, -mondayBased);
+}
+
+/** The 7 days, Monday to Sunday, of the week the date belongs to. */
+export function weekDays(isoDate: string): string[] {
+  const monday = startOfWeek(isoDate);
+  return Array.from({ length: WEEK_LENGTH }, (_, i) => addDays(monday, i));
+}
+
+/** `18:30:00` or `18:30` → minutes since midnight */
+export function minutesOf(isoTime: string): number {
+  const [hours, minutes] = isoTime.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+/** Minutes since midnight of the given moment, in local time. */
+export function nowMinutes(now: Date = new Date()): number {
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+/** e.g. `Mon` and `24` */
+export function shortDay(isoDate: string, locale?: string): { weekday: string; day: string } {
+  const date = parse(isoDate);
+  return {
+    weekday: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date),
+    day: String(date.getDate()),
+  };
+}
+
+/** e.g. `Thursday 26 November` */
+export function longDay(isoDate: string, locale?: string): string {
+  return new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(parse(isoDate));
+}
+
 /** e.g. `23 – 29 November 2026`, or `30 November – 6 December 2026` */
 export function periodLabel(from: string, to: string, locale?: string): string {
   return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' })

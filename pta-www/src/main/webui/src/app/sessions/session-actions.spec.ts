@@ -3,12 +3,12 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ptaRequestHeader } from './booking-actions.service';
-import { SessionCard } from './session-card';
+import { SessionActions } from './session-actions';
 import { Me, Session } from './session.model';
 
-describe('SessionCard', () => {
+describe('SessionActions', () => {
   let http: HttpTestingController;
-  let fixture: ComponentFixture<SessionCard>;
+  let fixture: ComponentFixture<SessionActions>;
   let changes: number;
 
   const alice: Me = { authenticated: true, name: 'Alice', linked: true };
@@ -28,7 +28,7 @@ describe('SessionCard', () => {
   };
 
   function render(me: Me, overrides: Partial<Session> = {}) {
-    fixture = TestBed.createComponent(SessionCard);
+    fixture = TestBed.createComponent(SessionActions);
     fixture.componentRef.setInput('session', { ...session, ...overrides });
     fixture.componentRef.setInput('me', me);
     changes = 0;
@@ -120,5 +120,17 @@ describe('SessionCard', () => {
     const card = render({ authenticated: true, name: 'Carol', linked: false });
     expect(card.querySelector('.hint')?.textContent).toBe('Your account is not linked yet');
     expect(card.querySelector('button')).toBeNull();
+  });
+
+  it('offers no action once the session has started', () => {
+    fixture = TestBed.createComponent(SessionActions);
+    fixture.componentRef.setInput('session', { ...session, participantBooking: 'DONE' });
+    fixture.componentRef.setInput('me', alice);
+    fixture.componentRef.setInput('started', true);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.mine')?.textContent).toBe("You're booked");
+    expect(element.querySelector('.hint')?.textContent).toBe('Started');
+    expect(element.querySelector('button')).toBeNull();
   });
 });

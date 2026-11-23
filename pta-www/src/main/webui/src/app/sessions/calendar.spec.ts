@@ -1,4 +1,4 @@
-import { addDays, dayHeading, daysBetween, isIsoDate, periodLabel, today } from './calendar';
+import { addDays, dayHeading, daysBetween, isIsoDate, longDay, minutesOf, nowMinutes, periodLabel, shortDay, startOfWeek, today, weekDays } from './calendar';
 
 describe('calendar', () => {
   it('formats today as a local ISO date, whatever the time of day', () => {
@@ -35,5 +35,26 @@ describe('calendar', () => {
     // spacing around the dash depends on the ICU data of the runtime
     expect(periodLabel('2026-11-23', '2026-11-29', 'en-GB')).toMatch(/^23\s?–\s?29 November 2026$/);
     expect(periodLabel('2026-11-30', '2026-12-06', 'en-GB')).toMatch(/^30 November\s?–\s?6 December 2026$/);
+  });
+});
+
+describe('weeks', () => {
+  it('run from Monday to Sunday', () => {
+    // 26 November 2026 is a Thursday
+    expect(startOfWeek('2026-11-26')).toBe('2026-11-23');
+    expect(startOfWeek('2026-11-23')).toBe('2026-11-23');
+    expect(startOfWeek('2026-11-29')).toBe('2026-11-23');
+    expect(weekDays('2026-12-31')).toEqual(['2026-12-28', '2026-12-29', '2026-12-30', '2026-12-31', '2027-01-01', '2027-01-02', '2027-01-03']);
+  });
+
+  it('read times as minutes of the day', () => {
+    expect(minutesOf('18:30:00')).toBe(1110);
+    expect(minutesOf('07:05')).toBe(425);
+    expect(nowMinutes(new Date(2026, 10, 26, 9, 41))).toBe(581);
+  });
+
+  it('name days briefly or fully', () => {
+    expect(shortDay('2026-11-26', 'en-GB')).toEqual({ weekday: 'Thu', day: '26' });
+    expect(longDay('2026-11-26', 'en-GB')).toBe('Thursday 26 November');
   });
 });

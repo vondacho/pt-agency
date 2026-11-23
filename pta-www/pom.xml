@@ -9,7 +9,7 @@
     <relativePath>../pta-quarkus-parent/pom.xml</relativePath>
   </parent>
   <artifactId>pta-www</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <packaging>jar</packaging>
   <description>Public web front of the agency: hosts the participant SPA and relays its API calls to the backing services</description>
   <dependencies>

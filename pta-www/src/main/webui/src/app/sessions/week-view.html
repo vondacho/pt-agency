@@ -1,0 +1,42 @@
+<div class="week" [style.--hour-height.px]="hourHeight">
+  <div class="corner" aria-hidden="true"></div>
+  @for (column of columns(); track column.day) {
+    <div class="day-head" [class.is-today]="column.isToday" [class.is-past]="column.isPast"
+         [attr.aria-current]="column.isToday ? 'date' : null">
+      <span class="weekday">{{ column.weekday }}</span>
+      <span class="date">{{ column.date }}</span>
+    </div>
+  }
+
+  <div class="hours" aria-hidden="true" [style.height.px]="gridHeight()">
+    @for (hour of hours(); track hour) {
+      <span class="hour" [style.top.px]="(hour - axis().startHour) * hourHeight">{{ (hour < 10 ? '0' : '') + hour }}:00</span>
+    }
+  </div>
+
+  @for (column of columns(); track column.day) {
+    <section class="column" [attr.aria-label]="column.weekday + ' ' + column.date"
+         [class.is-today]="column.isToday" [class.is-past]="column.isPast" [style.height.px]="gridHeight()">
+      @if (column.isToday && nowTop() !== null) {
+        <div class="now" [style.top.px]="nowTop()" aria-hidden="true"></div>
+      }
+      @for (block of column.blocks; track block.session.id) {
+        <button type="button"
+                class="block" [class]="'block is-' + kind(block.session)"
+                [class.is-mine]="!!block.session.participantBooking"
+                [class.is-started]="started(block.session)"
+                [style.top.px]="px(block.top)" [style.height.px]="px(block.height) - 2"
+                [style.left]="'calc(' + (block.lane * 100) / block.lanes + '% + 2px)'"
+                [style.width]="'calc(' + 100 / block.lanes + '% - 4px)'"
+                [attr.aria-label]="describe(block.session)"
+                (click)="open.emit({ day: column.day, session: block.session.id })">
+          <span class="line">
+            <span class="time">{{ time(block.session) }}</span>
+            <span class="seats">{{ seats(block.session) }}@if (block.session.participantBooking) { · you}</span>
+          </span>
+          <span class="title">{{ block.session.title }}</span>
+        </button>
+      }
+    </section>
+  }
+</div>
