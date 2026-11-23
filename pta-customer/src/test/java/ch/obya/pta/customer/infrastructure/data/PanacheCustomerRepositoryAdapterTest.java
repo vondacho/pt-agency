@@ -65,6 +65,24 @@ class PanacheCustomerRepositoryAdapterTest {
 
     @RunOnVertxContext
     @Test
+    void saving_a_customer_again_should_keep_and_extend_its_subscriptions(UniAsserter asserter) {
+        var customer = distinct(Samples.oneCustomerWithOneYearSubscription.get());
+        var another = new Subscription(
+                new ch.obya.pta.common.domain.vo.Validity(java.time.LocalDate.now(), null), null, 0,
+                ch.obya.pta.customer.domain.vo.ArticleId.create());
+
+        asserter.execute(() -> repository.save(customer));
+        // regression: re-saving used to re-insert the existing subscription rows before deleting them
+        asserter.execute(() -> repository.save(customer));
+        asserter.execute(() -> customer.add(another));
+        asserter.assertThat(
+                () -> repository.save(customer).flatMap(repository::findOne),
+                found -> assertThat(found.subscriptions()).extracting(Subscription::id)
+                        .containsExactlyInAnyOrderElementsOf(customer.subscriptions().stream().map(Subscription::id).toList()));
+    }
+
+    @RunOnVertxContext
+    @Test
     void removed_customer_should_no_longer_be_found_with_its_subscriptions(UniAsserter asserter) {
         var customer = distinct(Samples.oneCustomerWithOneYearSubscription.get());
 

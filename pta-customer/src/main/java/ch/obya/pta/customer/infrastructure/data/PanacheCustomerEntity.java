@@ -140,12 +140,16 @@ class PanacheCustomerEntity extends PanacheEntity {
     }
 
     /**
-     * Copies the customer's state and subscriptions; the subscriptions held by the entity are replaced.
+     * Copies the customer's state and subscriptions. Subscription rows are updated in place: replacing them all
+     * would insert the new rows before deleting the old ones (Hibernate's flush order) and violate their unique id.
      */
     PanacheCustomerEntity set(Customer customer) {
         set(customer.id(), customer.state());
-        subscriptions.clear();
-        customer.subscriptions().forEach(s -> subscriptions.add(PanacheSubscriptionEntity.of(this, s)));
+        var incoming = customer.subscriptions().stream()
+                .collect(java.util.stream.Collectors.toMap(s -> s.id().id(), s -> s));
+        subscriptions.removeIf(row -> !incoming.containsKey(row.logicalId));
+        subscriptions.forEach(row -> row.update(incoming.remove(row.logicalId)));
+        incoming.values().forEach(s -> subscriptions.add(PanacheSubscriptionEntity.of(this, s)));
         return this;
     }
 

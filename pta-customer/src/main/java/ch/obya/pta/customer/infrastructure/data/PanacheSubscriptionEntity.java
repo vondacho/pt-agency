@@ -31,16 +31,20 @@ class PanacheSubscriptionEntity extends PanacheEntity {
 
     static PanacheSubscriptionEntity of(PanacheCustomerEntity customer, Subscription subscription) {
         var entity = new PanacheSubscriptionEntity();
-        var state = subscription.state();
         entity.customer = customer;
         entity.logicalId = subscription.id().id();
-        entity.articleId = subscription.articleId().id();
-        entity.validFrom = state.validity().from();
-        entity.validTo = state.validity().to();
-        entity.quotaMin = state.quota() == null ? null : state.quota().min();
-        entity.quotaMax = state.quota() == null ? null : state.quota().max();
-        entity.credits = state.credits();
+        entity.update(subscription);
         return entity;
+    }
+
+    void update(Subscription subscription) {
+        var state = subscription.state();
+        this.articleId = subscription.articleId().id();
+        this.validFrom = state.validity().from();
+        this.validTo = state.validity().to();
+        this.quotaMin = state.quota() == null ? null : state.quota().min();
+        this.quotaMax = state.quota() == null ? null : state.quota().max();
+        this.credits = state.credits();
     }
 
     Subscription toDomain() {
