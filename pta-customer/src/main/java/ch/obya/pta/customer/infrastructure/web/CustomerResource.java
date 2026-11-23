@@ -148,7 +148,9 @@ public class CustomerResource {
                 .onFailure().transform(f -> Problem.valueOf(Status.NOT_FOUND, f.getMessage()))
                 .onItem().transformToMulti(s -> Multi.createFrom().iterable(s.subscriptionsAt(at)))
                 .map(SubscriptionDto::from)
-                .onFailure().transform(t -> Problem.valueOf(Status.BAD_REQUEST, t.getMessage()));
+                // keep the 404 of an unknown customer; anything else is a bad request
+                .onFailure(f -> !(f instanceof org.zalando.problem.ThrowableProblem))
+                .transform(t -> Problem.valueOf(Status.BAD_REQUEST, t.getMessage()));
     }
 
     @ResponseStatus(204)

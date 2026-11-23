@@ -1,0 +1,24 @@
+# Opt-in profile for the managed PostgreSQL on DigitalOcean (TLS, verify-full):
+#   mvn quarkus:dev -Dquarkus.profile=dev,do   (credentials from PTA_CUSTOMER_DB_USERNAME / PTA_CUSTOMER_DB_PASSWORD)
+quarkus:
+  smallrye-openapi:
+    info-title: Customer API (DigitalOcean)
+  datasource:
+    devservices:
+      enabled: false
+    username: ${PTA_CUSTOMER_DB_USERNAME}
+    password: ${PTA_CUSTOMER_DB_PASSWORD}
+    reactive:
+      url: postgresql://db-postgresql-fra1-09256-do-user-1676823-0.a.db.ondigitalocean.com:25060/pta-customer
+      max-size: 20
+      hostname-verification-algorithm: HTTPS
+      trust-certificate-pem:
+        ~: true
+        certs: ca-certificate.crt
+      postgresql:
+        ssl-mode: verify-full
+    jdbc:
+      url: jdbc:postgresql://db-postgresql-fra1-09256-do-user-1676823-0.a.db.ondigitalocean.com:25060/pta-customer
+  # never seed demo data into the managed database
+  flyway:
+    locations: db/migration

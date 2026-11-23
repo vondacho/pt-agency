@@ -50,7 +50,7 @@ public class CustomerServiceTest {
     void look_up_non_existing_customer_should_fail_with_expected_exception() {
         var customer = CustomerId.create();
 
-        when(customerRepository.findOne(customer)).thenReturn(Uni.createFrom().nothing());
+        when(customerRepository.findOne(customer)).thenReturn(Uni.createFrom().nullItem());
 
         var result = customerService.findOne(customer);
 

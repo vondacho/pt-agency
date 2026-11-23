@@ -1,0 +1,9 @@
+# Production: datasource from the environment
+quarkus:
+  datasource:
+    username: ${PTA_CUSTOMER_DB_USERNAME}
+    password: ${PTA_CUSTOMER_DB_PASSWORD}
+    reactive:
+      url: ${PTA_CUSTOMER_DB_REACTIVE_URL}
+    jdbc:
+      url: ${PTA_CUSTOMER_DB_JDBC_URL}

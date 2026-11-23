@@ -1,13 +1,17 @@
 quarkus:
   datasource:
     db-kind: postgresql
+  # Schema managed by Flyway in every profile; db/dev adds seed data in dev and test
+  flyway:
+    migrate-at-start: true
+    validate-migration-naming: true
   management:
     enabled: true
     port: 9000
   quinoa:
     package-manager-install:
       ~: true
-      node-version: 20.10.0
+      node-version: 24.22.3
   smallrye-openapi:
     info-contact-email: techsupport@ptagency.ch
     info-contact-name: Example API Support

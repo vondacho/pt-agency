@@ -7,9 +7,15 @@ import ch.obya.pta.customer.domain.vo.*;
 import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import io.quarkus.hibernate.reactive.panache.PanacheQuery;
 import io.quarkus.panache.common.Parameters;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,14 +27,24 @@ class PanacheCustomerEntity extends PanacheEntity {
     String firstName;
     String lastName;
     LocalDate birth;
+    @Enumerated(EnumType.STRING)
     Person.Gender gender;
     String streetNo;
     String zip;
     String city;
     String region;
     String country;
+    String billingStreetNo;
+    String billingZip;
+    String billingCity;
+    String billingRegion;
+    String billingCountry;
     String email;
     String phone;
+    String notes;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    List<PanacheSubscriptionEntity> subscriptions = new ArrayList<>();
 
     static PanacheQuery<PanacheCustomerEntity> findByLogicalId(CustomerId id) {
         return find("logicalId", id.id());
@@ -104,7 +120,7 @@ class PanacheCustomerEntity extends PanacheEntity {
     }
 
     Customer toDomain() {
-        return new Customer(
+        var customer = new Customer(
             new CustomerId(logicalId),
             new Person(salutation,
                     new Name(firstName),
@@ -112,11 +128,25 @@ class PanacheCustomerEntity extends PanacheEntity {
                     new Person.Birth(birth),
                     gender),
             new PhysicalAddress(streetNo, zip, city, region, country),
-            null,
-            new EmailAddress("john@doe.ch"),
-            new PhoneNumber("0041781234567"),
-            "notes"
+            billingZip == null ? null : new PhysicalAddress(billingStreetNo, billingZip, billingCity, billingRegion, billingCountry),
+            email == null ? null : new EmailAddress(email),
+            phone == null ? null : new PhoneNumber(phone),
+            notes
         );
+        subscriptions.forEach(s -> customer.add(s.toDomain()));
+        // Rehydration is not a creation: drop the CustomerCreated event raised by the constructor.
+        customer.domainEvents();
+        return customer;
+    }
+
+    /**
+     * Copies the customer's state and subscriptions; the subscriptions held by the entity are replaced.
+     */
+    PanacheCustomerEntity set(Customer customer) {
+        set(customer.id(), customer.state());
+        subscriptions.clear();
+        customer.subscriptions().forEach(s -> subscriptions.add(PanacheSubscriptionEntity.of(this, s)));
+        return this;
     }
 
     PanacheCustomerEntity set(CustomerId id, Customer.State state) {
@@ -131,8 +161,15 @@ class PanacheCustomerEntity extends PanacheEntity {
         city = state.deliveryAddress().city();
         region = state.deliveryAddress().region();
         country = state.deliveryAddress().country();
-        email = state.emailAddress().address();
-        phone = state.phoneNumber().number();
+        var billing = state.billingAddress();
+        billingStreetNo = billing == null ? null : billing.streetNo();
+        billingZip = billing == null ? null : billing.zip();
+        billingCity = billing == null ? null : billing.city();
+        billingRegion = billing == null ? null : billing.region();
+        billingCountry = billing == null ? null : billing.country();
+        email = state.emailAddress() == null ? null : state.emailAddress().address();
+        phone = state.phoneNumber() == null ? null : state.phoneNumber().number();
+        notes = state.notes();
         return this;
     }
 }
