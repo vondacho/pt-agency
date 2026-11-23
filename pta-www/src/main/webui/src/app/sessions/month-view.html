@@ -12,7 +12,7 @@
         @for (cell of row; track cell.day) {
           <td [class.is-other-month]="!cell.inMonth" [class.is-today]="cell.isToday" [class.is-past]="cell.isPast"
               [attr.aria-current]="cell.isToday ? 'date' : null">
-            <a class="day" routerLink="/" [queryParams]="dayParams(cell.day)" [attr.aria-label]="dayLabel(cell)">
+            <a class="day" routerLink="/sessions" [queryParams]="dayParams(cell.day)" [attr.aria-label]="dayLabel(cell)">
               <span class="date">{{ cell.date }}</span>
               @if (cell.count) {
                 <span class="count" aria-hidden="true">{{ cell.count }}
@@ -37,7 +37,7 @@
                 }
               </ul>
               @if (cell.more) {
-                <a class="more" routerLink="/" [queryParams]="dayParams(cell.day)">+{{ cell.more }} more</a>
+                <a class="more" routerLink="/sessions" [queryParams]="dayParams(cell.day)">+{{ cell.more }} more</a>
               }
             }
           </td>

@@ -8,21 +8,21 @@
     <div class="controls">
       <nav class="toggle" aria-label="View">
         @for (v of views(); track v) {
-          <a class="segment" routerLink="/" [queryParams]="params(v, selected())"
+          <a class="segment" routerLink="/sessions" [queryParams]="params(v, selected())"
              [class.is-active]="effectiveView() === v" [attr.aria-current]="effectiveView() === v ? 'page' : null">{{ viewLabels[v] }}</a>
         }
       </nav>
 
       <nav class="step" [attr.aria-label]="'Choose ' + effectiveView()">
         @if (previous(); as previousDate) {
-          <a class="button" routerLink="/" [queryParams]="params(effectiveView(), previousDate)"
+          <a class="button" routerLink="/sessions" [queryParams]="params(effectiveView(), previousDate)"
              [attr.aria-label]="'Previous ' + effectiveView()">‹</a>
         } @else {
           <span class="button" aria-disabled="true">‹</span>
         }
-        <a class="button" routerLink="/" [queryParams]="params(effectiveView(), today)"
+        <a class="button" routerLink="/sessions" [queryParams]="params(effectiveView(), today)"
            [class.is-current]="isCurrent()">{{ currentLabel() }}</a>
-        <a class="button" routerLink="/" [queryParams]="params(effectiveView(), next())"
+        <a class="button" routerLink="/sessions" [queryParams]="params(effectiveView(), next())"
            [attr.aria-label]="'Next ' + effectiveView()">›</a>
       </nav>
     </div>
@@ -31,7 +31,7 @@
   @if (effectiveView() === 'day') {
     <nav class="strip" aria-label="Days of the week">
       @for (d of strip(); track d.day) {
-        <a class="strip-day" routerLink="/" [queryParams]="params('day', d.day)"
+        <a class="strip-day" routerLink="/sessions" [queryParams]="params('day', d.day)"
            [class.is-selected]="d.isSelected" [class.is-today]="d.isToday" [class.is-past]="d.isPast"
            [attr.aria-current]="d.isSelected ? 'date' : null"
            [attr.aria-label]="d.weekday + ' ' + d.date + ': ' + d.count + (d.count === 1 ? ' session' : ' sessions') + (d.mine ? ', with your booking' : '')">
@@ -63,7 +63,7 @@
     @if (sessionCount() === 0) {
       <div class="notice">
         <p><strong>No sessions scheduled this week.</strong></p>
-        <p>Have a look at the <a routerLink="/" [queryParams]="params('week', next())">following week</a>.</p>
+        <p>Have a look at the <a routerLink="/sessions" [queryParams]="params('week', next())">following week</a>.</p>
       </div>
     } @else {
       <pta-week-view [class.is-refreshing]="sessions.isLoading()"

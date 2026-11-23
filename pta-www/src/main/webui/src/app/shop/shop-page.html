@@ -1,0 +1,77 @@
+<section class="page" aria-labelledby="shop-title">
+  <header class="page-header">
+    <h1 id="shop-title">Shop</h1>
+    <p class="lead">Choose how you train with us. Request a subscription here and pay at the agency: it starts once we confirm it.</p>
+  </header>
+
+  @if (catalogue.items.error()) {
+    <div class="notice is-error" role="alert">
+      <p><strong>The catalogue could not be loaded.</strong> Please try again in a moment.</p>
+      <button type="button" class="action" (click)="catalogue.items.reload()">Try again</button>
+    </div>
+  } @else if (catalogue.items.isLoading() && catalogue.groups().length === 0) {
+    <div class="skeleton" aria-busy="true" aria-label="Loading the catalogue"></div>
+  } @else if (catalogue.groups().length === 0) {
+    <div class="notice"><p><strong>Nothing is on sale at the moment.</strong></p></div>
+  } @else {
+    @for (group of catalogue.groups(); track group.kind) {
+      <section class="group" [attr.aria-labelledby]="'group-' + group.kind">
+        <h2 [id]="'group-' + group.kind">{{ group.title }}</h2>
+        <p class="intro">{{ group.intro }}</p>
+        <div class="items" role="list">
+          @for (item of group.items; track item.id) {
+            @let o = offer(item);
+            <article class="item" role="listitem" [attr.data-article]="item.id" [class.is-owned]="o.kind === 'owned'">
+              <header>
+                <h3>{{ item.name }}</h3>
+                <p class="price">{{ price(item.price) }}</p>
+              </header>
+              <ul class="facts">
+                <li>{{ item.duration }}</li>
+                <li>{{ item.sessions ? item.sessions + ' sessions' : 'Unlimited sessions' }}</li>
+              </ul>
+              @if (item.description) {
+                <p class="description">{{ item.description }}</p>
+              }
+              @if (item.opens.length) {
+                <p class="opens-title">Gives access to</p>
+                <ul class="opens">
+                  @for (session of item.opens; track session) {
+                    <li>{{ session }}</li>
+                  }
+                </ul>
+              }
+              <footer>
+                @switch (o.kind) {
+                  @case ('sign-in') {
+                    <a class="action is-link" href="/login">Sign in to request</a>
+                  }
+                  @case ('not-linked') {
+                    <span class="hint">Your account is not linked yet</span>
+                  }
+                  @case ('owned') {
+                    <span class="state is-owned">You have it{{ o.until ? ' until ' + shortDate(o.until) : '' }}</span>
+                  }
+                  @case ('requested') {
+                    <span class="state">Requested · awaiting confirmation</span>
+                    <button type="button" class="action" [disabled]="pending() === item.id" (click)="cancel(item, o.request.id)">
+                      {{ pending() === item.id ? 'Cancelling…' : 'Cancel request' }}
+                    </button>
+                  }
+                  @case ('request') {
+                    <button type="button" class="action is-primary" [disabled]="pending() === item.id" (click)="request(item)">
+                      {{ pending() === item.id ? 'Requesting…' : 'Request this ' + (item.kind === 'PASS' ? 'pass' : 'subscription') }}
+                    </button>
+                  }
+                }
+                @if (errors()[item.id]; as message) {
+                  <p class="error" role="alert">{{ message }}</p>
+                }
+              </footer>
+            </article>
+          }
+        </div>
+      </section>
+    }
+  }
+</section>

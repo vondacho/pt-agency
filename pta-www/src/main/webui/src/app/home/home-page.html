@@ -1,0 +1,136 @@
+@if (!loaded()) {
+  <div class="skeleton" aria-busy="true" aria-label="Loading"></div>
+} @else if (!me().authenticated) {
+  <section class="welcome" aria-labelledby="welcome-title">
+    <h1 id="welcome-title">Train with PT Agency</h1>
+    <p>Personal training and group courses. Browse the sessions, find the subscription that suits you,
+      and sign in to book.</p>
+    <div class="links">
+      <a class="action is-primary" href="/login">Sign in</a>
+      <a class="action" routerLink="/sessions">See the sessions</a>
+      <a class="action" routerLink="/shop">Subscriptions and passes</a>
+    </div>
+  </section>
+} @else if (!me().linked) {
+  <section class="welcome" aria-labelledby="welcome-title">
+    <h1 id="welcome-title">Welcome, {{ me().name }}</h1>
+    <p>Your account is not linked to a participant yet. Please contact the agency: once linked, your bookings and
+      subscriptions show here.</p>
+    <div class="links">
+      <a class="action" routerLink="/sessions">See the sessions</a>
+      <a class="action" routerLink="/shop">Subscriptions and passes</a>
+    </div>
+  </section>
+} @else {
+  <header class="page-header">
+    <h1>Hello, {{ me().name }}</h1>
+  </header>
+
+  <div class="grid">
+    <section class="panel bookings" aria-labelledby="bookings-title">
+      <header>
+        <h2 id="bookings-title">Next bookings</h2>
+        <a routerLink="/sessions">Planning</a>
+      </header>
+      @if (space.bookings.error()) {
+        <p class="problem" role="alert">Your bookings could not be loaded.
+          <button type="button" class="link" (click)="space.bookings.reload()">Try again</button></p>
+      } @else if (space.bookings.isLoading() && nextBookings().length === 0) {
+        <div class="skeleton is-small" aria-busy="true"></div>
+      } @else if (nextBookings().length === 0) {
+        <p class="empty">No booking yet. <a routerLink="/sessions">Find a session</a></p>
+      } @else {
+        <ul class="list">
+          @for (session of nextBookings(); track session.id) {
+            <li class="booking" [attr.data-session]="session.id">
+              <div class="what">
+                <a class="title" routerLink="/sessions" [queryParams]="planningLink(session)">{{ session.title }}</a>
+                <span class="meta">{{ when(session) }} · {{ session.location }}</span>
+              </div>
+              <pta-session-actions [session]="session" [me]="me()" [started]="started(session)"
+                                   (changed)="space.bookings.reload()" />
+            </li>
+          }
+        </ul>
+        @if (moreBookings()) {
+          <p class="more"><a routerLink="/sessions">+{{ moreBookings() }} more in the planning</a></p>
+        }
+      }
+    </section>
+
+    <section class="panel subscriptions" aria-labelledby="subscriptions-title">
+      <header>
+        <h2 id="subscriptions-title">My subscriptions</h2>
+        <a routerLink="/shop">Shop</a>
+      </header>
+      @if (space.subscriptions.error()) {
+        <p class="problem" role="alert">Your subscriptions could not be loaded.
+          <button type="button" class="link" (click)="space.subscriptions.reload()">Try again</button></p>
+      } @else if (space.subscriptions.isLoading() && mine().subscriptions.length === 0 && mine().requests.length === 0) {
+        <div class="skeleton is-small" aria-busy="true"></div>
+      } @else {
+        @if (mine().subscriptions.length === 0 && mine().requests.length === 0) {
+          <p class="empty">No subscription yet. <a routerLink="/shop">See the subscriptions and passes</a></p>
+        }
+        <ul class="list">
+          @for (s of mine().subscriptions; track s.id) {
+            <li class="subscription" [class.is-expiring]="s.expiresSoon">
+              <div class="what">
+                <span class="title">{{ s.name }}</span>
+                <span class="meta">
+                  {{ s.upcoming ? 'From ' + shortDate(s.from) + ' ' : '' }}{{ s.to ? 'until ' + shortDate(s.to) : 'no end date' }}
+                  @if (s.sessions) { · {{ s.sessions }} sessions }
+                </span>
+              </div>
+              @if (s.expiresSoon) {
+                <span class="badge is-warning">Ends soon · <a routerLink="/shop">renew</a></span>
+              } @else if (s.upcoming) {
+                <span class="badge">Coming</span>
+              } @else {
+                <span class="badge is-active">Active</span>
+              }
+            </li>
+          }
+          @for (r of mine().requests; track r.id) {
+            <li class="request">
+              <div class="what">
+                <span class="title">{{ r.name }}</span>
+                <span class="meta">Requested on {{ shortDate(r.requestedAt) }} · awaiting confirmation by the agency</span>
+              </div>
+              <button type="button" class="action" [disabled]="cancelling() === r.id" (click)="cancelRequest(r.id)">
+                {{ cancelling() === r.id ? 'Cancelling…' : 'Cancel request' }}
+              </button>
+            </li>
+          }
+        </ul>
+        @if (requestError(); as message) {
+          <p class="problem" role="alert">{{ message }}</p>
+        }
+      }
+    </section>
+
+    <section class="panel profile" aria-labelledby="profile-title">
+      <header>
+        <h2 id="profile-title">My profile</h2>
+        <a routerLink="/me/profile">Edit</a>
+      </header>
+      @if (profile(); as p) {
+        <dl>
+          <dt>Name</dt><dd>{{ p.firstName }} {{ p.lastName }}</dd>
+          <dt>E-mail</dt><dd>{{ p.email || '—' }}</dd>
+          <dt>Phone</dt><dd>{{ p.phone || '—' }}</dd>
+          <dt>Address</dt>
+          <dd>
+            @if (p.delivery; as a) {
+              {{ a.streetNo }}<br>{{ a.zip }} {{ a.city }}{{ a.country ? ', ' + a.country : '' }}
+            } @else { — }
+          </dd>
+        </dl>
+      } @else if (space.profile.error()) {
+        <p class="problem" role="alert">Your profile could not be loaded.</p>
+      } @else {
+        <div class="skeleton is-small" aria-busy="true"></div>
+      }
+    </section>
+  </div>
+}

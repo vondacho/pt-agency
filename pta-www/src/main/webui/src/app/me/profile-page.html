@@ -1,0 +1,83 @@
+<section class="page" aria-labelledby="profile-title">
+  <header class="page-header">
+    <a class="back" routerLink="/">‹ Home</a>
+    <h1 id="profile-title">My profile</h1>
+  </header>
+
+  @if (!loaded()) {
+    <div class="skeleton" aria-busy="true"></div>
+  } @else if (!me().authenticated) {
+    <p class="notice">Please <a href="/login">sign in</a> to edit your profile.</p>
+  } @else if (!me().linked) {
+    <p class="notice">Your account is not linked to a participant yet. Please contact the agency.</p>
+  } @else if (space.profile.error()) {
+    <p class="notice is-error" role="alert">Your profile could not be loaded. <button type="button" class="link" (click)="space.profile.reload()">Try again</button></p>
+  } @else if (!profile()) {
+    <div class="skeleton" aria-busy="true"></div>
+  } @else {
+    <p class="who">{{ profile()!.firstName }} {{ profile()!.lastName }}</p>
+
+    <form class="panel" [formGroup]="contact" (ngSubmit)="saveContact()" novalidate aria-labelledby="contact-title">
+      <h2 id="contact-title">Contact</h2>
+      <label>
+        <span>E-mail</span>
+        <input type="email" formControlName="email" autocomplete="email" [attr.aria-invalid]="invalid('email')" />
+        @if (invalid('email')) { <small class="field-error">Please give a valid e-mail address.</small> }
+      </label>
+      <label>
+        <span>Phone</span>
+        <input type="tel" formControlName="phone" autocomplete="tel" [attr.aria-invalid]="invalid('phone')" />
+        @if (invalid('phone')) { <small class="field-error">Please give a phone number, e.g. +41 79 123 45 67.</small> }
+      </label>
+      <p class="note">This is how the agency contacts you. Your sign-in e-mail is managed with your account.</p>
+      <footer>
+        @switch (contactStatus().kind) {
+          @case ('saved') { <span class="status is-saved" role="status">Saved</span> }
+          @case ('error') { <span class="status is-error" role="alert">{{ $any(contactStatus()).message }}</span> }
+        }
+        <button type="submit" class="action is-primary" [disabled]="contactStatus().kind === 'saving'">
+          {{ contactStatus().kind === 'saving' ? 'Saving…' : 'Save contact' }}
+        </button>
+      </footer>
+    </form>
+
+    <form class="panel" [formGroup]="addresses" (ngSubmit)="saveAddresses()" novalidate aria-labelledby="address-title">
+      <h2 id="address-title">Address</h2>
+      <fieldset formGroupName="delivery">
+        <legend class="sr-only">Address</legend>
+        <label class="wide"><span>Street and number</span><input formControlName="streetNo" autocomplete="address-line1" /></label>
+        <label><span>Postcode</span><input formControlName="zip" autocomplete="postal-code" [attr.aria-invalid]="invalid('delivery.zip')" /></label>
+        <label><span>Town</span><input formControlName="city" autocomplete="address-level2" [attr.aria-invalid]="invalid('delivery.city')" /></label>
+        <label><span>Canton / region</span><input formControlName="region" autocomplete="address-level1" /></label>
+        <label><span>Country</span><input formControlName="country" autocomplete="country" [attr.aria-invalid]="invalid('delivery.country')" /></label>
+      </fieldset>
+      @if (invalid('delivery.zip') || invalid('delivery.city') || invalid('delivery.country') || invalid('delivery.streetNo')) {
+        <small class="field-error">Please give a postcode, a town and a country, without commas.</small>
+      }
+
+      <label class="check">
+        <input type="checkbox" formControlName="separateBilling" />
+        <span>Send invoices to another address</span>
+      </label>
+      @if (addresses.controls.separateBilling.value) {
+        <fieldset formGroupName="billing">
+          <legend>Billing address</legend>
+          <label class="wide"><span>Street and number</span><input formControlName="streetNo" /></label>
+          <label><span>Postcode</span><input formControlName="zip" /></label>
+          <label><span>Town</span><input formControlName="city" /></label>
+          <label><span>Canton / region</span><input formControlName="region" /></label>
+          <label><span>Country</span><input formControlName="country" /></label>
+        </fieldset>
+      }
+      <footer>
+        @switch (addressStatus().kind) {
+          @case ('saved') { <span class="status is-saved" role="status">Saved</span> }
+          @case ('error') { <span class="status is-error" role="alert">{{ $any(addressStatus()).message }}</span> }
+        }
+        <button type="submit" class="action is-primary" [disabled]="addressStatus().kind === 'saving'">
+          {{ addressStatus().kind === 'saving' ? 'Saving…' : 'Save address' }}
+        </button>
+      </footer>
+    </form>
+  }
+</section>

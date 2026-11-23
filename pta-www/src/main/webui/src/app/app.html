@@ -2,8 +2,14 @@
   <div class="container">
     <a class="brand" routerLink="/">
       <span class="logo" aria-hidden="true">PT</span>
-      <span>PT Agency</span>
+      <span class="brand-name">PT Agency</span>
     </a>
+
+    <nav class="main-nav" aria-label="Main">
+      <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">Home</a>
+      <a routerLink="/sessions" routerLinkActive="is-active" ariaCurrentWhenActive="page">Sessions</a>
+      <a routerLink="/shop" routerLinkActive="is-active" ariaCurrentWhenActive="page">Shop</a>
+    </nav>
 
     @if (auth.loaded()) {
       <nav class="account" aria-label="Account">
