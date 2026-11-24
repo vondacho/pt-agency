@@ -127,6 +127,11 @@ components:
           items:
             $ref: "#/components/schemas/Violation"
           description: List of validation constraint violations that occurred
+    Instant:
+      type: string
+      format: date-time
+      examples:
+      - 2022-03-10T16:15:50Z
     LocalDate:
       type: string
       format: date
@@ -137,6 +142,11 @@ components:
       properties:
         content:
           type: string
+    NewRequest:
+      type: object
+      properties:
+        articleId:
+          $ref: "#/components/schemas/UUID"
     PhoneNumber:
       type: object
       properties:
@@ -182,6 +192,19 @@ components:
       type: object
       properties:
         id:
+          $ref: "#/components/schemas/UUID"
+    SubscriptionRequestDto:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+        articleId:
+          $ref: "#/components/schemas/UUID"
+        requestedAt:
+          $ref: "#/components/schemas/Instant"
+        status:
+          type: string
+        subscription:
           $ref: "#/components/schemas/UUID"
     UUID:
       type: string
@@ -482,6 +505,115 @@ paths:
       summary: Rename
       tags:
       - Customer Resource
+  /customers/{id}/subscription-requests:
+    post:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionRequestDto"
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionRequestDto"
+        "400":
+          description: Bad Request
+      summary: Request
+      tags:
+      - Subscription Request Resource
+    get:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionRequestDto"
+            application/problem+json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionRequestDto"
+      summary: List
+      tags:
+      - Subscription Request Resource
+  /customers/{id}/subscription-requests/{request}:
+    delete:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      - name: request
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionRequestDto"
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionRequestDto"
+      summary: Cancel
+      tags:
+      - Subscription Request Resource
+  /customers/{id}/subscription-requests/{request}/confirmation:
+    post:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      - name: request
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      - name: from
+        in: query
+        schema:
+          $ref: "#/components/schemas/LocalDate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionRequestDto"
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionRequestDto"
+      summary: Confirm
+      tags:
+      - Subscription Request Resource
   /customers/{id}/subscriptions:
     get:
       parameters:
@@ -506,8 +638,13 @@ paths:
       summary: Valid Subscriptions Of
       tags:
       - Customer Resource
+servers:
+- url: http://localhost:8082
+  description: Auto-added by management interface
+- url: http://0.0.0.0:8082
+  description: Auto-added by management interface
 info:
-  title: Customer API
+  title: Customer API (development)
   version: 1.0.0
   description: Customer API
   termsOfService: Your terms here
@@ -518,8 +655,3 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-servers:
-- url: http://localhost:8080
-  description: Auto generated value
-- url: http://0.0.0.0:8080
-  description: Auto generated value

@@ -405,8 +405,13 @@ paths:
       summary: Eligible Subscriptions For
       tags:
       - Article Resource
+servers:
+- url: http://localhost:8083
+  description: Auto-added by management interface
+- url: http://0.0.0.0:8083
+  description: Auto-added by management interface
 info:
-  title: Shopping API
+  title: Shopping API (development)
   version: 1.0.0
   description: Shopping API
   termsOfService: Your terms here
@@ -417,8 +422,3 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-servers:
-- url: http://localhost:8080
-  description: Auto generated value
-- url: http://0.0.0.0:8080
-  description: Auto generated value
