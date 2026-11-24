@@ -193,4 +193,49 @@ public class SessionTest {
         assertThat(session.findBooking(waiting)).get().extracting(Booking::status).isEqualTo(Booking.Status.DONE);
         assertThat(seated(session)).isEqualTo(1);
     }
+
+    private static String code(Throwable e) {
+        return ((ch.obya.pta.common.domain.util.Problem.Exception) e).code();
+    }
+
+    @Test
+    void a_booked_seat_can_be_cancelled_until_the_course_deadline() {
+        var session = sessionWith(1, 5, 1, 0);
+        var participant = Samples.oneParticipant.get();
+        assertThat(session.book(participant, SubscriptionId.create()).status()).isEqualTo(Booking.Status.DONE);
+        var start = session.startsAt();
+
+        assertThat(session.cancellableUntil(12)).contains(start.minusHours(12));
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> session.cancel(participant, start.minusHours(12), 12))
+                .satisfies(e -> assertThat(code(e)).isEqualTo("CancellationClosed"));
+        assertThat(session.findBooking(participant)).isPresent();
+
+        session.cancel(participant, start.minusHours(12).minusMinutes(1), 12);
+        assertThat(session.findBooking(participant)).isEmpty();
+    }
+
+    @Test
+    void pre_bookings_and_the_waiting_list_can_be_left_until_the_start() {
+        var prebooked = sessionWith(3, 5, 0, 0);
+        var early = Samples.oneParticipant.get();
+        assertThat(prebooked.book(early, SubscriptionId.create()).status()).isEqualTo(Booking.Status.PREBOOKED);
+        prebooked.cancel(early, prebooked.startsAt().minusMinutes(5), 12);
+        assertThat(prebooked.findBooking(early)).isEmpty();
+
+        var full = sessionWith(1, 1, 1, 0);
+        var waiting = Samples.oneParticipant.get();
+        assertThat(full.book(waiting, SubscriptionId.create()).status()).isEqualTo(Booking.Status.WAITING);
+        full.cancel(waiting, full.startsAt().minusMinutes(5), 12);
+        assertThat(full.findBooking(waiting)).isEmpty();
+    }
+
+    @Test
+    void without_a_deadline_a_seat_can_be_cancelled_until_the_start() {
+        var session = sessionWith(1, 5, 1, 0);
+        var participant = Samples.oneParticipant.get();
+        session.book(participant, SubscriptionId.create());
+        assertThat(session.cancellableUntil(null)).isEmpty();
+        session.cancel(participant, session.startsAt().minusMinutes(1), null);
+        assertThat(session.findBooking(participant)).isEmpty();
+    }
 }

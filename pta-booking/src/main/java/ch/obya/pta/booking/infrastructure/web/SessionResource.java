@@ -19,9 +19,17 @@ import org.zalando.problem.Status;
 import io.quarkus.resteasy.reactive.links.InjectRestLinks;
 import io.quarkus.resteasy.reactive.links.RestLink;
 import io.quarkus.resteasy.reactive.links.RestLinkType;
+import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.smallrye.mutiny.Uni;
 
+import ch.obya.pta.booking.application.ArticleStore;
 import ch.obya.pta.booking.application.BookingService;
+import ch.obya.pta.booking.domain.aggregate.Session;
+import ch.obya.pta.booking.domain.repository.InstructorRepository;
+import ch.obya.pta.booking.domain.repository.VenueRepository;
+import ch.obya.pta.booking.domain.vo.Instructor;
+import ch.obya.pta.booking.domain.vo.InstructorId;
+import ch.obya.pta.booking.domain.vo.Venue;
 import ch.obya.pta.booking.domain.repository.SessionRepository;
 import ch.obya.pta.booking.domain.util.BookingProblem;
 import ch.obya.pta.booking.domain.vo.ParticipantId;
@@ -38,6 +46,12 @@ public class SessionResource {
     BookingService bookingService;
     @Inject
     SessionRepository sessionRepository;
+    @Inject
+    InstructorRepository instructors;
+    @Inject
+    VenueRepository venues;
+    @Inject
+    ArticleStore articleStore;
 
     static final int DEFAULT_PERIOD_DAYS = 7;
 
@@ -47,16 +61,54 @@ public class SessionResource {
      * With {@code participant}, each session tells the status of that participant's booking, if any.
      */
     @GET
+    @WithSession // sessions and instructors: one reactive session for both queries
     public Uni<List<SessionDto>> list(@RestQuery LocalDate from, @RestQuery LocalDate to, @RestQuery UUID participant) {
         var start = Optional.ofNullable(from).orElseGet(LocalDate::now);
         var end = Optional.ofNullable(to).orElseGet(() -> start.plusDays(DEFAULT_PERIOD_DAYS));
         if (end.isBefore(start)) {
             return Uni.createFrom().failure(Problem.valueOf(Status.BAD_REQUEST, "'to' must not be before 'from'"));
         }
-        return sessionRepository.findByCriteria(Map.of("day", List.of(greaterThanOrEqual(start), lessThanOrEqual(end))))
-                .map(sessions -> sessions.stream()
-                        .map(session -> SessionDto.from(session, participant == null ? null : new ParticipantId(participant)))
-                        .toList());
+        var participantId = participant == null ? null : new ParticipantId(participant);
+        return instructorNames().flatMap(names ->
+                sessionRepository.findByCriteria(Map.of("day", List.of(greaterThanOrEqual(start), lessThanOrEqual(end))))
+                        .map(sessions -> sessions.stream()
+                                .map(session -> SessionDto.from(session, participantId, nameOf(session, names)))
+                                .toList()));
+    }
+
+    /**
+     * The session with its instructor, venue, note and cancellation deadline, for its overview.
+     * With {@code participant}, the session tells the status of that participant's booking.
+     * The deadline is left out when pta-shopping cannot answer: the rest of the overview stays available.
+     */
+    @GET
+    @Path("{id}/details")
+    @WithSession
+    public Uni<SessionDetailsDto> details(SessionId id, @RestQuery UUID participant) {
+        var participantId = participant == null ? null : new ParticipantId(participant);
+        return bookingService.findOne(id).flatMap(session -> {
+            var state = session.state();
+            Uni<Instructor> instructor = state.instructor() == null ? Uni.createFrom().nullItem() : instructors.findOne(state.instructor());
+            Uni<Venue> venue = state.venue() == null ? Uni.createFrom().nullItem() : venues.findOne(state.venue());
+            Uni<Integer> deadline = articleStore.cancellationHoursOf(session.articleId()).onFailure().recoverWithNull();
+            return instructor.flatMap(i -> venue.flatMap(v -> deadline.map(hours -> new SessionDetailsDto(
+                    SessionDto.from(session, participantId, i == null ? null : i.name()),
+                    session.articleId().id(),
+                    SessionDetailsDto.InstructorDto.from(i),
+                    SessionDetailsDto.VenueDto.from(v),
+                    state.note(),
+                    hours,
+                    session.cancellableUntil(hours).orElse(null)))));
+        });
+    }
+
+    private Uni<Map<InstructorId, String>> instructorNames() {
+        return instructors.findAll()
+                .map(list -> list.stream().collect(java.util.stream.Collectors.toMap(Instructor::id, Instructor::name)));
+    }
+
+    private static String nameOf(Session session, Map<InstructorId, String> names) {
+        return session.state().instructor() == null ? null : names.get(session.state().instructor());
     }
 
     @InjectRestLinks(RestLinkType.INSTANCE)

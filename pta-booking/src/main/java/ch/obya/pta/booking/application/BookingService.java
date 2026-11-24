@@ -1,6 +1,7 @@
 package ch.obya.pta.booking.application;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -52,11 +53,20 @@ public class BookingService {
                 .flatMap(it -> notify(it.getItem1().domainEvents()).replaceWith(it.getItem2()));
     }
 
+    /**
+     * Cancels the participant's booking; a booked seat only until the course's cancellation deadline.
+     */
     @WithTransaction
     public Uni<Void> cancel(SessionId session, ParticipantId participant) {
         return findOne(session)
-                .flatMap(it -> cancelBooking(it, participant).replaceWith(it))
+                .flatMap(it -> deadlineFor(it, participant).flatMap(hours -> cancelBooking(it, participant, hours)).replaceWith(it))
                 .flatMap(it -> notify(it.domainEvents()));
+    }
+
+    /** The course's cancellation deadline, needed only for a booked seat. */
+    private Uni<Integer> deadlineFor(Session session, ParticipantId participant) {
+        var bookedSeat = session.findBooking(participant).map(b -> b.status() == Booking.Status.DONE).orElse(false);
+        return bookedSeat ? articleStore.cancellationHoursOf(session.articleId()) : Uni.createFrom().nullItem();
     }
 
     @WithTransaction
@@ -100,9 +110,9 @@ public class BookingService {
                 .call(() -> sessionRepository.save(session));
     }
 
-    private Uni<Void> cancelBooking(Session session, ParticipantId participant) {
+    private Uni<Void> cancelBooking(Session session, ParticipantId participant, Integer cancellationHours) {
         return Uni.createFrom().voidItem()
-                .invoke(() -> session.cancel(participant))
+                .invoke(() -> session.cancel(participant, LocalDateTime.now(), cancellationHours))
                 .call(() -> sessionRepository.save(session))
                 .replaceWithVoid();
     }

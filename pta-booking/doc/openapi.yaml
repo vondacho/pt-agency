@@ -86,11 +86,25 @@ components:
           items:
             $ref: "#/components/schemas/Violation"
           description: List of validation constraint violations that occurred
+    InstructorDto:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+        name:
+          type: string
+        bio:
+          type: string
     LocalDate:
       type: string
       format: date
       examples:
       - 2022-03-10
+    LocalDateTime:
+      type: string
+      format: date-time
+      examples:
+      - 2022-03-10T12:15:50
     LocalTime:
       type: string
       format: local-time
@@ -104,6 +118,24 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/UUID"
+    SessionDetailsDto:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/SessionDto"
+        articleId:
+          $ref: "#/components/schemas/UUID"
+        instructor:
+          $ref: "#/components/schemas/InstructorDto"
+        venue:
+          $ref: "#/components/schemas/VenueDto"
+        note:
+          type: string
+        cancellationHours:
+          type: integer
+          format: int32
+        cancellableUntil:
+          $ref: "#/components/schemas/LocalDateTime"
     SessionDto:
       type: object
       properties:
@@ -138,6 +170,8 @@ components:
           type: boolean
         participantBooking:
           $ref: "#/components/schemas/Status"
+        instructor:
+          type: string
     SessionId:
       type: object
       properties:
@@ -153,6 +187,19 @@ components:
       type: string
       format: uuid
       pattern: "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+    VenueDto:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+        name:
+          type: string
+        address:
+          type: string
+        accessNotes:
+          type: string
+        mapUrl:
+          type: string
     Violation:
       type: object
       description: Validation constraint violation details
@@ -178,6 +225,56 @@ components:
           examples:
           - Invalid email format
 paths:
+  /instructors/{id}:
+    get:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstructorDto"
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/InstructorDto"
+      summary: Instructor
+      tags:
+      - Registry Resource
+  /participants/{id}/bookings:
+    get:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      - name: from
+        in: query
+        schema:
+          $ref: "#/components/schemas/LocalDate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionDto"
+            application/problem+json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SessionDto"
+      summary: Bookings
+      tags:
+      - Participant Resource
   /sessions:
     get:
       parameters:
@@ -347,6 +444,52 @@ paths:
       summary: Book
       tags:
       - Session Resource
+  /sessions/{id}/details:
+    get:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/SessionId"
+      - name: participant
+        in: query
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionDetailsDto"
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/SessionDetailsDto"
+      summary: Details
+      tags:
+      - Session Resource
+  /venues/{id}:
+    get:
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VenueDto"
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/VenueDto"
+      summary: Venue
+      tags:
+      - Registry Resource
 info:
   title: Booking API
   version: 1.0.0

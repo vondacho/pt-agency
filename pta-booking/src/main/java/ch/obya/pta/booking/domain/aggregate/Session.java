@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -34,7 +35,11 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
         TimeSlot slot,
         Location location,
         Quota quota,
-        Set<Booking> bookings) {
+        Set<Booking> bookings,
+        /* optional: who leads the session, where it takes place, a note for this session */
+        InstructorId instructor,
+        VenueId venue,
+        String note) {
         public State {
             ifNullThrow(title, CommonProblem.AttributeNotNull.toException("Session.title"));
             ifNullThrow(slot, CommonProblem.AttributeNotNull.toException("Session.slot"));
@@ -54,7 +59,7 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
     }
 
     public Session(SessionId id, ArticleId articleId, String title, TimeSlot slot, Location location, Quota quota, Set<Booking> bookings) {
-        super(id, new State(title, slot, location, quota, new HashSet<>(bookings)));
+        super(id, new State(title, slot, location, quota, new HashSet<>(bookings), null, null, null));
         ifNullThrow(articleId, CommonProblem.AttributeNotNull.toException("Session.articleId"));
         this.articleId = articleId;
     }
@@ -120,9 +125,33 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
         return booking;
     }
 
+    /** When the session starts. */
+    public LocalDateTime startsAt() {
+        return LocalDateTime.of(state.slot.dow(), state.slot.start());
+    }
+
+    /**
+     * Until when a booked seat can be cancelled, given the course's deadline in hours; absent when there is none.
+     */
+    public Optional<LocalDateTime> cancellableUntil(Integer cancellationHours) {
+        return Optional.ofNullable(cancellationHours).map(hours -> startsAt().minusHours(hours));
+    }
+
     public void cancel(ParticipantId participant) {
+        cancel(participant, null, null);
+    }
+
+    /**
+     * Cancels the participant's booking. A booked seat can only be cancelled until the course's deadline
+     * ({@code cancellationHours} before the start); leaving the waiting list or a pre-booking is always possible,
+     * the session not being confirmed for the participant yet.
+     */
+    public void cancel(ParticipantId participant, LocalDateTime now, Integer cancellationHours) {
         var booking = findBooking(participant);
         ifThrow(booking::isEmpty, BookingProblem.NoBooking.toException(this.id, participant));
+        ifThrow(() -> booking.get().status() == Booking.Status.DONE && now != null
+                        && cancellableUntil(cancellationHours).map(deadline -> !now.isBefore(deadline)).orElse(false),
+                BookingProblem.CancellationClosed.toException(this.id, cancellationHours));
 
         state.bookings.removeIf(b -> b.id().equals(booking.get().id()));
         andEvent(new BookingCancelled(this.id, participant),
@@ -166,6 +195,21 @@ public class Session extends BaseEntity<Session, SessionId, Session.State> {
 
         public Modifier reschedule(TimeSlot slot) {
             stateBuilder.slot(slot);
+            return this;
+        }
+
+        public Modifier assign(InstructorId instructor) {
+            stateBuilder.instructor(instructor);
+            return this;
+        }
+
+        public Modifier host(VenueId venue) {
+            stateBuilder.venue(venue);
+            return this;
+        }
+
+        public Modifier annotate(String note) {
+            stateBuilder.note(note);
             return this;
         }
 

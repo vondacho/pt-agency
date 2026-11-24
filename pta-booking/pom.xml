@@ -9,7 +9,7 @@
     <relativePath>../pta-quarkus-parent/pom.xml</relativePath>
   </parent>
   <artifactId>pta-booking</artifactId>
-  <version>0.5.0</version>
+  <version>0.6.0</version>
   <packaging>jar</packaging>
   <dependencies>
     <dependency>

@@ -21,7 +21,8 @@ public enum BookingProblem implements Problem {
     NoSessionForBooking("Session with booking %s does not exist."),
     TimeSlotInvalid("Week time slot (%s, %s, %s, %s) is not valid."),
     ServiceUnavailable("Service %s is unavailable: %s"),
-    ConcurrentModification("Session %s was changed by another booking, please retry.");
+    ConcurrentModification("Session %s was changed by another booking, please retry."),
+    CancellationClosed("Session %s: bookings can no longer be cancelled (%s hours before the start).");
 
     private final String text;
 }

@@ -19,6 +19,8 @@ import io.quarkus.panache.common.Sort;
 import ch.obya.pta.booking.domain.aggregate.Session;
 import ch.obya.pta.booking.domain.entity.Booking;
 import ch.obya.pta.booking.domain.vo.ArticleId;
+import ch.obya.pta.booking.domain.vo.InstructorId;
+import ch.obya.pta.booking.domain.vo.VenueId;
 import ch.obya.pta.booking.domain.vo.Location;
 import ch.obya.pta.booking.domain.vo.SessionId;
 import ch.obya.pta.common.domain.vo.Quota;
@@ -39,6 +41,9 @@ class PanacheSessionEntity extends PanacheEntity {
     String location;
     Integer quotaMin;
     Integer quotaMax;
+    UUID instructorId;
+    UUID venueId;
+    String note;
 
     /** Optimistic locking: a session changed by a concurrent booking is not silently overwritten. */
     @Version
@@ -103,7 +108,7 @@ class PanacheSessionEntity extends PanacheEntity {
 
     Session toDomain() {
         var id = new SessionId(logicalId);
-        return new Session(
+        var session = new Session(
                 id,
                 new ArticleId(articleId),
                 title,
@@ -111,6 +116,14 @@ class PanacheSessionEntity extends PanacheEntity {
                 new Location(location),
                 new Quota(quotaMin, quotaMax),
                 bookings.stream().map(b -> b.toDomain(id)).collect(Collectors.toSet()));
+        if (instructorId != null || venueId != null || note != null) {
+            session.modify()
+                    .assign(instructorId == null ? null : new InstructorId(instructorId))
+                    .host(venueId == null ? null : new VenueId(venueId))
+                    .annotate(note)
+                    .done();
+        }
+        return session;
     }
 
     PanacheSessionEntity set(SessionId id, ArticleId articleId, Session.State state) {
@@ -124,6 +137,9 @@ class PanacheSessionEntity extends PanacheEntity {
         this.location = state.location().name();
         this.quotaMin = state.quota().min();
         this.quotaMax = state.quota().max();
+        this.instructorId = state.instructor() == null ? null : state.instructor().id();
+        this.venueId = state.venue() == null ? null : state.venue().id();
+        this.note = state.note();
         mergeBookings(state.bookings());
         return this;
     }

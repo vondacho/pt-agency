@@ -22,7 +22,7 @@ public class ProblemExceptionMapper {
     public Response map(Problem.Exception problem) {
         var status = switch (problem.code()) {
             case "EntityNotFound", "NoSession", "NoBooking", "NoSessionForBooking" -> 404;
-            case "NoActiveSubscription", "SubscriptionStillNotActive", "SubscriptionNoMoreActive" -> 422;
+            case "NoActiveSubscription", "SubscriptionStillNotActive", "SubscriptionNoMoreActive", "CancellationClosed" -> 422;
             case "SessionQuotaReached", "SubscriptionQuotaReached", "ConcurrentModification" -> 409;
             case "ServiceUnavailable" -> 502;
             default -> 400;

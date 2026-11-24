@@ -34,11 +34,28 @@ public class ArticleStoreAdapter implements ArticleStore {
                 .onItem().transformToMulti(list -> Multi.createFrom().iterable(list));
     }
 
+    @Override
+    public Uni<Integer> cancellationHoursOf(ArticleId article) {
+        return client.article(article.id())
+                .map(a -> a.course() == null ? null : a.course().cancellationHours())
+                .onFailure().transform(f -> BookingProblem.ServiceUnavailable.toException("pta-shopping", f.getMessage()).get());
+    }
+
+    /** The part of pta-shopping's article representation needed here. */
+    public record ArticleView(Course course) {
+        public record Course(Integer cancellationHours) {
+        }
+    }
+
     @Path("/articles")
     @RegisterRestClient(configKey = "shopping")
     public interface ArticleStoreRestClient {
         @GET
         @Path("/{id}/subscriptions")
         Uni<List<ArticleId>> eligibleSubscriptions(@RestPath UUID id);
+
+        @GET
+        @Path("/{id}")
+        Uni<ArticleView> article(@RestPath UUID id);
     }
 }

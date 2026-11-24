@@ -209,6 +209,7 @@ public class BookingServiceTest {
         session.domainEvents();
 
         when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
+        when(articleStore.cancellationHoursOf(session.articleId())).thenReturn(Uni.createFrom().nullItem());
         when(eventPublisher.publish(anyCollection())).thenReturn(Uni.createFrom().voidItem());
 
         var result = bookingService.cancel(session.id(), participant);
@@ -226,5 +227,23 @@ public class BookingServiceTest {
                 .containsExactlyInAnyOrder(
                     new BookingCancelled(session.id(), participant),
                     new SubscriptionCredited(subscription.id(), participant));
+    }
+
+    @Test
+    void cancelling_a_booked_seat_after_the_course_deadline_should_fail() {
+        var session = Samples.onePrivateSession.get();
+        var participant = Samples.oneParticipant.get();
+        session.book(participant, Samples.oneYearlySubscription.get().id());
+        session.domainEvents();
+
+        when(sessionRepository.findOne(session.id())).thenReturn(Uni.createFrom().item(session));
+        // a deadline long before the session's start: cancellation is closed
+        when(articleStore.cancellationHoursOf(session.articleId())).thenReturn(Uni.createFrom().item(24 * 365));
+
+        bookingService.cancel(session.id(), participant)
+                .subscribe().withSubscriber(UniAssertSubscriber.create())
+                .awaitFailure();
+        assertThat(session.findBooking(participant)).isPresent();
+        verify(sessionRepository, times(0)).save(any(Session.class));
     }
 }

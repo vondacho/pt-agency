@@ -2,6 +2,24 @@
 -- Seed rows use negative technical ids so they never collide with ids allocated by Hibernate sequences.
 DELETE FROM session_booking WHERE id < 0;
 DELETE FROM training_session WHERE id < 0;
+DELETE FROM instructor WHERE id < 0;
+DELETE FROM venue WHERE id < 0;
+
+INSERT INTO instructor (id, logicalId, name, bio)
+VALUES
+    (-1, '60000000-0000-0000-0000-000000000001', 'Léa Dubois',
+     'Certified personal trainer for ten years, Léa builds programmes around your goals, from strength to return after an injury.'),
+    (-2, '60000000-0000-0000-0000-000000000002', 'Marco Rossi',
+     'Group coach and former athlete, Marco brings energy and precision to HIIT and bootcamp sessions.');
+
+INSERT INTO venue (id, logicalId, name, address, accessNotes, mapUrl)
+VALUES
+    (-1, '70000000-0000-0000-0000-000000000001', 'PT Agency studio', 'Rue du Lac 12, 1003 Lausanne',
+     'Ground floor, entrance on the courtyard. Studio A on the left, Studio B at the end of the corridor. Changing rooms and showers on site.',
+     'https://www.openstreetmap.org/search?query=Rue%20du%20Lac%2012%2C%201003%20Lausanne'),
+    (-2, '70000000-0000-0000-0000-000000000002', 'Parc de Milan', 'Avenue de Milan, 1007 Lausanne',
+     'Meeting point at the fountain near the main entrance. In case of storm, the session moves to the studio.',
+     'https://www.openstreetmap.org/search?query=Parc%20de%20Milan%2C%20Lausanne');
 
 INSERT INTO training_session (id, logicalId, articleId, title, day, startTime, stopTime, durationMinutes, location, quotaMin, quotaMax)
 VALUES
@@ -34,3 +52,13 @@ VALUES
     (-10, -4, '20000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000004', 'DONE'),
     (-11, -4, '20000000-0000-0000-0000-000000000005', '30000000-0000-0000-0000-000000000005', 'DONE'),
     (-12, -4, '20000000-0000-0000-0000-000000000006', '30000000-0000-0000-0000-000000000006', 'DONE');
+
+-- Who leads each session and where: personal training with Léa at the studio, group courses with Marco
+UPDATE training_session SET instructorId = '60000000-0000-0000-0000-000000000001', venueId = '70000000-0000-0000-0000-000000000001'
+WHERE id < 0 AND articleId = '10000000-0000-0000-0000-000000000001';
+UPDATE training_session SET instructorId = '60000000-0000-0000-0000-000000000002', venueId = '70000000-0000-0000-0000-000000000001'
+WHERE id < 0 AND articleId IN ('10000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000004');
+UPDATE training_session SET instructorId = '60000000-0000-0000-0000-000000000002', venueId = '70000000-0000-0000-0000-000000000002'
+WHERE id < 0 AND articleId = '10000000-0000-0000-0000-000000000003';
+UPDATE training_session SET note = 'Focus on core strength this week.' WHERE id = -4;
+UPDATE training_session SET note = 'New playlist and a partner challenge at the end.' WHERE id = -3;

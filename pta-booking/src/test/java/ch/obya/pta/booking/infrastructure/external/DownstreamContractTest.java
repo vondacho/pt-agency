@@ -109,4 +109,17 @@ class DownstreamContractTest {
         assertThat(eligible).extracting(a -> a.id().toString())
                 .containsExactly("50000000-0000-0000-0000-000000000001", "50000000-0000-0000-0000-000000000002");
     }
+
+    @Test
+    void the_course_cancellation_deadline_is_read_from_the_article() {
+        var course = UUID.randomUUID();
+        wiremock.register(get(urlPathEqualTo("/articles/%s".formatted(course))).willReturn(okJson("""
+                {"id":{"id":"%s"},"name":{"content":"Bootcamp"},"course":{"objectives":["Cardio"],"cancellationHours":12}}""".formatted(course))));
+        var none = UUID.randomUUID();
+        wiremock.register(get(urlPathEqualTo("/articles/%s".formatted(none))).willReturn(okJson("""
+                {"id":{"id":"%s"},"name":{"content":"Open gym"}}""".formatted(none))));
+
+        assertThat(articles.cancellationHoursOf(new ArticleId(course)).await().atMost(TIMEOUT)).isEqualTo(12);
+        assertThat(articles.cancellationHoursOf(new ArticleId(none)).await().atMost(TIMEOUT)).isNull();
+    }
 }

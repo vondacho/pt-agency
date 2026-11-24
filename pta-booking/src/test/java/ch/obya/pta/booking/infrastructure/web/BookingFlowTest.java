@@ -9,6 +9,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 
 import ch.obya.pta.booking.application.ArticleStore;
 import ch.obya.pta.booking.application.CustomerProfile;
@@ -37,6 +38,7 @@ class BookingFlowTest {
     static final String GROUP_NO_SUBSCRIPTION = "f0000000-0000-0000-0000-000000000002";
     static final String GROUP_CUSTOMER_DOWN = "f0000000-0000-0000-0000-000000000003";
     static final String BOOTCAMP = "f0000000-0000-0000-0000-000000000004";
+    static final String CANCELLATION = "f0000000-0000-0000-0000-000000000005";
     static final ArticleId PERSONAL_TRAINING = new ArticleId(UUID.fromString("10000000-0000-0000-0000-000000000001"));
     static final ArticleId BOOTCAMP_ARTICLE = new ArticleId(UUID.fromString("10000000-0000-0000-0000-000000000003"));
     static final ArticleId UNLIMITED_PASS = new ArticleId(UUID.fromString("50000000-0000-0000-0000-000000000001"));
@@ -48,7 +50,13 @@ class BookingFlowTest {
     @InjectMock
     ArticleStore articleStore;
 
-    private void holdsUnlimitedPass(UUID participant) {
+    @org.junit.jupiter.api.BeforeEach
+    void courseDeadline() {
+        // the test sessions start in 30 days: a 12 hours deadline leaves cancellation open
+        when(articleStore.cancellationHoursOf(any())).thenReturn(Uni.createFrom().item(12));
+    }
+
+        private void holdsUnlimitedPass(UUID participant) {
         when(customerProfile.validSubscriptionsOf(eq(new ParticipantId(participant)), any())).thenReturn(Multi.createFrom().item(
                 new Subscription(SubscriptionId.create(), UNLIMITED_PASS, new Validity(DAY.minusMonths(1), DAY.plusMonths(1)))));
     }
@@ -136,5 +144,21 @@ class BookingFlowTest {
                 .body("code", equalTo("EntityNotFound"));
         given().when().post("/{id}/bookings/{participant}", UUID.randomUUID(), UUID.randomUUID())
                 .then().statusCode(404);
+    }
+
+    @Test
+    void cancelling_a_booked_seat_after_the_course_deadline_should_fail_with_422() {
+        var participant = UUID.randomUUID();
+        holdsUnlimitedPass(participant);
+        passGivesAccessTo(BOOTCAMP_ARTICLE);
+        given().when().post("/{id}/bookings/{participant}", CANCELLATION, participant)
+                .then().statusCode(201).body("status", equalTo("DONE"));
+
+        // a deadline long before the session's start: the booked seat can no longer be cancelled
+        when(articleStore.cancellationHoursOf(any())).thenReturn(Uni.createFrom().item(24 * 365));
+        given().when().delete("/{id}/bookings/{participant}", CANCELLATION, participant)
+                .then().statusCode(422)
+                .body("code", equalTo("CancellationClosed"));
+        participantBookingIs(CANCELLATION, participant, "DONE");
     }
 }
