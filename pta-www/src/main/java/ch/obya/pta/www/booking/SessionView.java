@@ -15,6 +15,7 @@ import java.util.UUID;
  * @param waitlisted     participants on the waiting list
  * @param confirmed      true when the minimum number of bookings is reached
  * @param participantBooking status of the signed-in participant's booking (DONE, PREBOOKED, WAITING), if any
+ * @param instructor     name of the instructor leading the session, if any
  */
 public record SessionView(
         UUID id,
@@ -29,5 +30,6 @@ public record SessionView(
         Integer availableSeats,
         int waitlisted,
         boolean confirmed,
-        String participantBooking) {
+        String participantBooking,
+        String instructor) {
 }

@@ -25,7 +25,10 @@
                  [style.left]="'calc(' + (block.lane * 100) / block.lanes + '% + 4px)'"
                  [style.width]="'calc(' + 100 / block.lanes + '% - 8px)'">
           <header class="head">
-            <h3 class="title">{{ session.title }}</h3>
+            <h3 class="title">
+              <button type="button" class="title-button" aria-haspopup="dialog"
+                      (click)="open.emit({ day: session.day, session: session.id })">{{ session.title }}</button>
+            </h3>
             <span class="badge">{{ label(session) }}</span>
           </header>
           <p class="meta">

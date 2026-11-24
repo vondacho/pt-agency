@@ -19,6 +19,8 @@ export interface Session {
   confirmed: boolean;
   /** The signed-in participant's booking of this session, if any. */
   participantBooking?: ParticipantBooking;
+  /** Name of the instructor leading the session, if any. */
+  instructor?: string;
 }
 
 /** DONE: seat booked · PREBOOKED: seat held until the session's minimum is reached · WAITING: on the waiting list */

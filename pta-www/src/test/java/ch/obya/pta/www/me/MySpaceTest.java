@@ -69,7 +69,7 @@ class MySpaceTest {
 
     private static Article article(UUID id, String name, double price, Set<Tag> profile, Set<Tag> grants, ShoppingClient.Quota quota) {
         return new Article(new ShoppingClient.Ref(id), new Content(name), new Content(name + " description"),
-                new ShoppingClient.Validity(TODAY.minusYears(1), null), new ShoppingClient.Price(price), profile, grants, quota);
+                new ShoppingClient.Validity(TODAY.minusYears(1), null), new ShoppingClient.Price(price), profile, grants, quota, null);
     }
 
     @BeforeEach
@@ -194,7 +194,7 @@ class MySpaceTest {
     @OidcSecurity(claims = @Claim(key = "customer_id", value = ALICE))
     void bookings_are_the_coming_ones_of_the_participant() {
         var session = new SessionView(UUID.randomUUID(), "Bootcamp", TODAY.plusDays(1), LocalTime.of(10, 0), LocalTime.of(11, 0),
-                "City park", 3, 20, 4, 16, 0, true, "DONE");
+                "City park", 3, 20, 4, 16, 0, true, "DONE", null);
         when(bookings.bookings(ALICE_ID, TODAY)).thenReturn(Uni.createFrom().item(List.of(session)));
         given().when().get("/api/me/bookings").then().statusCode(200)
                 .body("title", contains("Bootcamp"), "participantBooking", contains("DONE"));

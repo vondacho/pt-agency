@@ -124,7 +124,7 @@ class BookingActionsTest {
     void sessions_tell_the_signed_in_participant_their_bookings() {
         var day = LocalDate.now();
         var session = new SessionView(SESSION, "Personal training", day, LocalTime.of(7, 0), LocalTime.of(8, 0),
-                "Studio A", 1, 1, 1, 0, 0, true, "DONE");
+                "Studio A", 1, 1, 1, 0, 0, true, "DONE", null);
         when(booking.sessions(any(), any(), eq(UUID.fromString(ALICE)))).thenReturn(Uni.createFrom().item(List.of(session)));
 
         given().when().get("/api/sessions")

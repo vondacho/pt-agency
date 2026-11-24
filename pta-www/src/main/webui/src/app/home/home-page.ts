@@ -58,7 +58,7 @@ export class HomePage {
   protected shortDate = shortDate;
 
   protected planningLink(session: Session) {
-    return { view: 'day', date: session.day, focus: session.id };
+    return { view: 'day', date: session.day, focus: session.id, session: session.id };
   }
 
   protected async cancelRequest(id: string) {

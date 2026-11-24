@@ -6,6 +6,7 @@ import { addDays, addMonths, dayHeading, isIsoDate, longDay, monthLabel, monthWe
 import { DayView } from './day-view';
 import { MonthView } from './month-view';
 import { axisFor } from './schedule';
+import { SessionOverviewDialog } from './session-overview';
 import { SessionService } from './session.service';
 import { WeekView } from './week-view';
 
@@ -16,11 +17,13 @@ const NARROW = '(max-width: 719px)';
 
 /**
  * Session planning: a month calendar, a week on a time grid, or one day with the sessions' details and actions.
- * State lives in the URL (`?view=month|week|day&date=YYYY-MM-DD&focus=<session>`), so views can be bookmarked and shared.
+ * Selecting a session opens its overview in a dialog.
+ * State lives in the URL (`?view=month|week|day&date=YYYY-MM-DD&focus=<session>&session=<id>`), so views and
+ * overviews can be bookmarked and shared.
  */
 @Component({
   selector: 'pta-sessions-page',
-  imports: [RouterLink, MonthView, WeekView, DayView],
+  imports: [RouterLink, MonthView, WeekView, DayView, SessionOverviewDialog],
   templateUrl: './sessions-page.html',
   styleUrl: './sessions-page.scss',
 })
@@ -31,6 +34,8 @@ export class SessionsPage {
   readonly date = input<string>();
   /** Session to highlight in the day view. */
   readonly focus = input<string>();
+  /** Session whose overview is open. */
+  readonly session = input<string>();
   /** Former parameter of the first day of the week, still honoured for existing links. */
   readonly from = input<string>();
 
@@ -141,6 +146,16 @@ export class SessionsPage {
     return focus ? { view, date, focus } : { view, date };
   }
 
+  /** Opens the session's overview, staying on the current view. */
+  protected openSession(event: { day: string; session: string }) {
+    void this.router.navigate([], { queryParams: { session: event.session }, queryParamsHandling: 'merge' });
+  }
+
+  protected closeSession() {
+    void this.router.navigate([], { queryParams: { session: null }, queryParamsHandling: 'merge' });
+  }
+
+  /** Leaves the overview for the session's day, the session highlighted. */
   protected openDay(event: { day: string; session: string }) {
     void this.router.navigate([], { queryParams: this.params('day', event.day, event.session) });
   }

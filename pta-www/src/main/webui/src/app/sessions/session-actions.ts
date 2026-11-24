@@ -17,12 +17,17 @@ export class SessionActions {
   readonly me = input.required<Me>();
   /** A session that has started can no longer be booked or cancelled. */
   readonly started = input(false);
+  /** False once the course's cancellation deadline has passed: a booked seat can no longer be cancelled. */
+  readonly cancellationOpen = input(true);
   /** Emitted once a booking or cancellation succeeded: the sessions should be reloaded. */
   readonly changed = output<void>();
 
   private readonly actions = inject(BookingActions);
 
   protected readonly action = computed(() => bookingActionFor(this.session(), this.me()));
+  /** A booked seat past the deadline; pre-bookings and the waiting list can still be left. */
+  protected readonly cancellationClosed = computed(() =>
+    !this.cancellationOpen() && this.session().participantBooking === 'DONE');
   protected readonly yourBooking = computed(() => participantBookingLabel(this.session()));
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);

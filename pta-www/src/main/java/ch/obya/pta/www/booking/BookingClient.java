@@ -28,6 +28,22 @@ public interface BookingClient {
     @GET
     Uni<List<SessionView>> sessions(@RestQuery LocalDate from, @RestQuery LocalDate to, @RestQuery UUID participant);
 
+    /** The session with its instructor, venue, note and cancellation deadline. */
+    @GET
+    @Path("/{session}/details")
+    Uni<SessionDetails> details(@RestPath UUID session, @RestQuery UUID participant);
+
+    /** pta-booking's details of a session. */
+    record SessionDetails(SessionView session, UUID articleId, Instructor instructor, Venue venue, String note,
+                          Integer cancellationHours, java.time.LocalDateTime cancellableUntil) {
+    }
+
+    record Instructor(UUID id, String name, String bio) {
+    }
+
+    record Venue(UUID id, String name, String address, String accessNotes, String mapUrl) {
+    }
+
     @POST
     @Path("/{session}/bookings/{participant}")
     Uni<BookingView> book(@RestPath UUID session, @RestPath UUID participant);

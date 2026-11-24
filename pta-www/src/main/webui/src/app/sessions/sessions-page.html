@@ -58,7 +58,7 @@
   } @else if (effectiveView() === 'month') {
     <pta-month-view [class.is-refreshing]="sessions.isLoading()"
                     [weeks]="weeks()" [month]="selected()" [sessions]="sessions.value()" [today]="today" [now]="now()"
-                    (open)="openDay($event)" />
+                    (open)="openSession($event)" />
   } @else if (effectiveView() === 'week') {
     @if (sessionCount() === 0) {
       <div class="notice">
@@ -68,11 +68,17 @@
     } @else {
       <pta-week-view [class.is-refreshing]="sessions.isLoading()"
                      [days]="days()" [sessions]="sessions.value()" [axis]="axis()" [today]="today" [now]="now()"
-                     (open)="openDay($event)" />
+                     (open)="openSession($event)" />
     }
   } @else {
     <pta-day-view [class.is-refreshing]="sessions.isLoading()"
                   [day]="selected()" [sessions]="sessions.value()" [axis]="axis()" [today]="today" [now]="now()"
-                  [me]="me()" [focus]="focus()" (changed)="sessions.reload()" />
+                  [me]="me()" [focus]="focus()" (changed)="sessions.reload()"
+                  (open)="openSession($event)" />
+  }
+
+  @if (session(); as id) {
+    <pta-session-overview [sessionId]="id" [me]="me()" [today]="today" [now]="now()"
+                          (closed)="closeSession()" (showDay)="openDay($event)" (changed)="sessions.reload()" />
   }
 </section>

@@ -9,6 +9,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 
 import io.smallrye.mutiny.Uni;
@@ -22,7 +23,7 @@ public interface ShoppingClient {
 
     /** pta-shopping's representation, value objects included. */
     record Article(Ref id, Content name, Content description, Validity validity, Price price,
-                   Set<Tag> profile, Set<Tag> grants, Quota quota) {
+                   Set<Tag> profile, Set<Tag> grants, Quota quota, Course course) {
 
         public boolean hasProfile(String tag) {
             return profile != null && profile.contains(new Tag(tag));
@@ -46,6 +47,19 @@ public interface ShoppingClient {
 
     record Quota(Integer min, Integer max) {
     }
+
+    /** What a course (session article) is about and how to take part. */
+    record Course(List<String> objectives, String level, String prerequisites, String whatToBring, Integer cancellationHours) {
+    }
+
+    @GET
+    @Path("/{id}")
+    Uni<Article> article(@RestPath UUID id);
+
+    /** The subscriptions and passes giving access to a session article. */
+    @GET
+    @Path("/{id}/subscriptions")
+    Uni<List<Ref>> eligibleSubscriptions(@RestPath UUID id);
 
     /**
      * @param tag    profile tags, any of them (e.g. SUBSCRIPTION, PASS, SESSION)

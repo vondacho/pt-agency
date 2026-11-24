@@ -32,9 +32,9 @@ class SessionResourceTest {
     void sessions_should_be_relayed_from_booking() {
         var day = LocalDate.of(2026, 11, 23);
         var full = new SessionView(UUID.randomUUID(), "Small group HIIT", day, LocalTime.of(18, 0), LocalTime.of(19, 0),
-                "Studio B", 2, 5, 5, 0, 1, true, null);
+                "Studio B", 2, 5, 5, 0, 1, true, null, null);
         var unlimited = new SessionView(UUID.randomUUID(), "Open gym", day, LocalTime.of(20, 0), LocalTime.of(21, 30),
-                "Studio A", null, null, 3, null, 0, true, null);
+                "Studio A", null, null, 3, null, 0, true, null, null);
         when(booking.sessions(day, day.plusDays(6), null)).thenReturn(Uni.createFrom().item(List.of(full, unlimited)));
 
         given()

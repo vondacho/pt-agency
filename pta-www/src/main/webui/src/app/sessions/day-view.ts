@@ -30,6 +30,8 @@ export class DayView {
   readonly focus = input<string>();
   /** Emitted after a booking or cancellation: the sessions should be reloaded. */
   readonly changed = output<void>();
+  /** The participant wants the session's overview. */
+  readonly open = output<{ day: string; session: string }>();
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 

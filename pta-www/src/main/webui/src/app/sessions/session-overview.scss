@@ -1,0 +1,279 @@
+.overview {
+  width: min(40rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 3rem);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.25);
+
+  &::backdrop {
+    background: rgb(15 18 24 / 0.5);
+  }
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 3rem);
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+}
+
+.when {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+}
+
+.close {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.body {
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+
+  section h3 {
+    margin: 0 0 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.badge {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--positive);
+  background: var(--positive-tint);
+
+  &.is-needs-more {
+    color: var(--caution);
+    background: var(--caution-tint);
+  }
+
+  &.is-full {
+    color: var(--muted);
+    background: var(--muted-tint);
+  }
+}
+
+.note {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.incomplete {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--caution-tint);
+  color: var(--caution);
+  font-size: 0.9rem;
+}
+
+.objectives {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.level {
+  margin-top: 0.5rem !important;
+}
+
+.label {
+  font-weight: 600;
+  margin-right: 0.3rem;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1.1rem;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.text {
+  margin-top: 0.2rem !important;
+}
+
+.secondary {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.conditions {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.6rem 1rem;
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    display: grid;
+    gap: 0.2rem;
+  }
+}
+
+.ok {
+  color: var(--positive);
+  font-weight: 600;
+}
+
+.caution {
+  color: var(--caution);
+}
+
+.link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+
+  .actions {
+    flex: 1 1 16rem;
+  }
+}
+
+.notice {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+}
+
+.button {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.skeleton {
+  height: 14rem;
+  border-radius: 0.6rem;
+  background: var(--track);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Phones: a full-screen sheet, the actions staying at hand. */
+@media (max-width: 599px) {
+  .overview {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .sheet {
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  .body {
+    flex: 1;
+  }
+
+  .conditions {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+
+    dd {
+      margin-bottom: 0.6rem;
+    }
+  }
+}

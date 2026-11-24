@@ -1,0 +1,137 @@
+<dialog #dialog class="overview" aria-labelledby="overview-title" (cancel)="onCancel($event)" (click)="onClick($event)">
+  <div class="sheet">
+    <header class="top">
+      <div class="heading">
+        @if (session(); as s) {
+          <h2 id="overview-title">{{ s.title }}</h2>
+          <p class="when"><time [attr.datetime]="s.day + 'T' + s.start">{{ when() }}</time></p>
+        } @else {
+          <h2 id="overview-title">Session</h2>
+        }
+      </div>
+      <button type="button" class="close" aria-label="Close" (click)="closed.emit()">×</button>
+    </header>
+
+    <div class="body">
+      @if (overview.error()) {
+        <div class="notice is-error" role="alert">
+          <p><strong>This session could not be loaded.</strong> It may no longer exist, or the service is unavailable.</p>
+          <button type="button" class="button" (click)="overview.reload()">Try again</button>
+        </div>
+      } @else if (value(); as o) {
+        @let s = o.session;
+        <p class="status">
+          @if (availability(); as a) {
+            <span [class]="'badge is-' + a.kind">{{ a.label }}</span>
+          }
+          @if (o.note) {
+            <span class="note">{{ o.note }}</span>
+          }
+        </p>
+        @if (o.incomplete) {
+          <p class="incomplete" role="status">Some details are temporarily unavailable.</p>
+        }
+
+        @if (o.course; as course) {
+          <section aria-labelledby="ov-objectives">
+            <h3 id="ov-objectives">What you'll work on</h3>
+            @if (course.objectives.length) {
+              <ul class="objectives">
+                @for (objective of course.objectives; track $index) {
+                  <li>{{ objective }}</li>
+                }
+              </ul>
+            }
+            @if (course.level) {
+              <p class="level"><span class="label">Level</span> {{ course.level }}</p>
+            }
+          </section>
+        }
+
+        <div class="pair">
+          @if (o.instructor; as instructor) {
+            <section aria-labelledby="ov-instructor">
+              <h3 id="ov-instructor">Instructor</h3>
+              <p class="name">{{ instructor.name }}</p>
+              @if (instructor.bio) {
+                <p class="text">{{ instructor.bio }}</p>
+              }
+            </section>
+          }
+          <section aria-labelledby="ov-venue">
+            <h3 id="ov-venue">Venue</h3>
+            @if (o.venue; as venue) {
+              <p class="name">{{ venue.name }}</p>
+              @if (venue.address) {
+                <p class="text">{{ venue.address }}</p>
+              }
+              @if (venue.accessNotes) {
+                <p class="text secondary">{{ venue.accessNotes }}</p>
+              }
+              @if (venue.mapUrl) {
+                <a class="link" [href]="venue.mapUrl" target="_blank" rel="noopener noreferrer">Open map<span class="visually-hidden"> (new tab)</span></a>
+              }
+            } @else {
+              <p class="name">{{ s.location }}</p>
+            }
+          </section>
+        </div>
+
+        <section aria-labelledby="ov-conditions">
+          <h3 id="ov-conditions">To take part</h3>
+          <dl class="conditions">
+            <dt>Subscription</dt>
+            <dd>
+              @if (o.youHoldOne === true) {
+                <p class="ok">You have one: {{ heldNames() }}.</p>
+              } @else {
+                @if (o.access.length) {
+                  <p>Included in: {{ accessNames() }}.</p>
+                } @else if (!o.incomplete) {
+                  <p>No subscription on sale gives access to this session.</p>
+                }
+                @if (o.youHoldOne === false) {
+                  <p class="caution">You don't hold one yet.</p>
+                }
+                @if (onSale()) {
+                  <a class="link" routerLink="/shop" (click)="closed.emit()">See the shop</a>
+                }
+              }
+            </dd>
+
+            <dt>Seats</dt>
+            <dd>
+              @for (rule of seats(); track $index) {
+                <p>{{ rule }}</p>
+              }
+            </dd>
+
+            <dt>Cancellation</dt>
+            <dd><p [class.caution]="!o.cancellationOpen">{{ cancellation() }}</p>
+              <p class="secondary">Leaving the waiting list or a pre-booking is possible until the start.</p></dd>
+
+            @if (o.course?.prerequisites) {
+              <dt>Prerequisites</dt>
+              <dd><p>{{ o.course!.prerequisites }}</p></dd>
+            }
+            @if (o.course?.whatToBring) {
+              <dt>What to bring</dt>
+              <dd><p>{{ o.course!.whatToBring }}</p></dd>
+            }
+          </dl>
+        </section>
+      } @else {
+        <div class="skeleton" aria-busy="true" aria-label="Loading the session"></div>
+      }
+    </div>
+
+    @if (value(); as o) {
+      <footer class="bottom">
+        <pta-session-actions class="actions" [session]="o.session" [me]="me()" [started]="started()"
+                             [cancellationOpen]="o.cancellationOpen" (changed)="onChanged()" />
+        <button type="button" class="link day-link"
+                (click)="showDay.emit({ day: o.session.day, session: o.session.id })">Show the day</button>
+      </footer>
+    }
+  </div>
+</dialog>

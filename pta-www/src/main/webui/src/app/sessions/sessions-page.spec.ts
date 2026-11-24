@@ -91,14 +91,14 @@ describe('SessionsPage', () => {
       expect(evening.getAttribute('aria-label')).toContain("You're booked");
     });
 
-    it('opens the day of a selected session, highlighting it', async () => {
+    it('opens the overview of a selected session, staying on the week', async () => {
       const fixture = render({ date: monday });
       const page = await answer(fixture, week);
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
       page.querySelector<HTMLButtonElement>('pta-week-view .column:nth-of-type(4) .block')!.click();
 
-      expect(navigate).toHaveBeenCalledWith([], { queryParams: { view: 'day', date: thursday, focus: 'mobility' } });
+      expect(navigate).toHaveBeenCalledWith([], { queryParams: { session: 'mobility' }, queryParamsHandling: 'merge' });
     });
 
     it('tells when nothing is scheduled', async () => {
@@ -195,11 +195,11 @@ describe('SessionsPage', () => {
       expect(page.querySelectorAll('pta-month-view td.is-other-month').length).toBe(otherMonthDays);
     });
 
-    it('opens the day of a selected session, highlighting it', async () => {
+    it('opens the overview of a selected session, staying on the month', async () => {
       const page = await answer(render({ view: 'month', date: tenth }), month);
       const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
       page.querySelector<HTMLButtonElement>('pta-month-view .session.is-mine')!.click();
-      expect(navigate).toHaveBeenCalledWith([], { queryParams: { view: 'day', date: twelfth, focus: 'mine' } });
+      expect(navigate).toHaveBeenCalledWith([], { queryParams: { session: 'mine' }, queryParamsHandling: 'merge' });
     });
 
     it('moves by whole months', async () => {
@@ -253,5 +253,33 @@ describe('SessionsPage', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(page.querySelectorAll('pta-week-view .block').length).toBe(3);
+  });
+
+  describe('session overview', () => {
+    it('opens from a day view title', async () => {
+      const page = await answer(render({ view: 'day', date: tuesday }), week);
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      page.querySelector<HTMLButtonElement>('pta-day-view [data-session="hiit"] .title-button')!.click();
+      expect(navigate).toHaveBeenCalledWith([], { queryParams: { session: 'hiit' }, queryParamsHandling: 'merge' });
+    });
+
+    it('is shown for the session in the URL, closes without it, and can lead to the day', async () => {
+      const fixture = render({ date: monday, session: 'hiit' });
+      // both requests answered before waiting: a pending request keeps the fixture unstable
+      http.expectOne(r => r.url === '/api/sessions').flush(week);
+      http.expectOne('/api/sessions/hiit/overview').flush({ session: week[1], cancellationOpen: true, access: [], incomplete: false });
+      await fixture.whenStable();
+      const page = fixture.nativeElement as HTMLElement;
+      fixture.detectChanges();
+
+      expect(page.querySelector('pta-session-overview h2')?.textContent).toContain('Small group HIIT');
+      const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      page.querySelector<HTMLButtonElement>('pta-session-overview .close')!.click();
+      expect(navigate).toHaveBeenCalledWith([], { queryParams: { session: null }, queryParamsHandling: 'merge' });
+
+      page.querySelector<HTMLButtonElement>('pta-session-overview .day-link')!.click();
+      expect(navigate).toHaveBeenCalledWith([], { queryParams: { view: 'day', date: tuesday, focus: 'hiit' } });
+    });
   });
 });
