@@ -25,6 +25,7 @@ import ch.obya.pta.shopping.domain.event.ArticleRemoved;
 import ch.obya.pta.shopping.domain.repository.ArticleRepository;
 import ch.obya.pta.shopping.domain.util.ArticleProblem;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
+import ch.obya.pta.shopping.domain.vo.CourseDetails;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
 
@@ -47,9 +48,14 @@ public class ArticleService {
                                  Set<Tag> profile,
                                  Set<Tag> grants,
                                  Quota quota,
-                                 Price price) {
+                                 Price price,
+                                 CourseDetails course) {
         return checkUniqueness(null, name, validity).replaceWith(
-                Uni.createFrom().item(() -> new Article(name.standardize(), description, validity, profile, grants, quota, price))
+                Uni.createFrom().item(() -> {
+                            var article = new Article(name.standardize(), description, validity, profile, grants, quota, price);
+                            if (course != null) article.modify().describe(course).done();
+                            return article;
+                        })
                         .flatMap(a -> repository.save(a).replaceWith(a))
                         .flatMap(a -> eventPublisher.publish(a.domainEvents()).replaceWith(a))
                         .map(Article::id));

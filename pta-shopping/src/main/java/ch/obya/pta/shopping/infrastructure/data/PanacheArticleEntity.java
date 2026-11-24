@@ -15,6 +15,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntity;
 import io.quarkus.hibernate.reactive.panache.PanacheQuery;
@@ -26,6 +27,7 @@ import ch.obya.pta.common.domain.vo.Validity;
 import ch.obya.pta.common.util.search.AttributeFilter;
 import ch.obya.pta.shopping.domain.aggregate.Article;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
+import ch.obya.pta.shopping.domain.vo.CourseDetails;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
 
@@ -50,6 +52,18 @@ class PanacheArticleEntity extends PanacheEntity {
     @CollectionTable(name = "article_grant", joinColumns = @JoinColumn(name = "article_id"))
     @Column(name = "tag")
     Set<String> grants = new HashSet<>();
+
+    // course details, for session articles
+    String level;
+    String prerequisites;
+    String whatToBring;
+    Integer cancellationHours;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "article_objective", joinColumns = @JoinColumn(name = "article_id"))
+    @OrderColumn(name = "position")
+    @Column(name = "text")
+    List<String> objectives = new ArrayList<>();
 
     static PanacheQuery<PanacheArticleEntity> findByLogicalId(ArticleId id) {
         return find("logicalId", id.id());
@@ -113,7 +127,10 @@ class PanacheArticleEntity extends PanacheEntity {
                 toTags(grants),
                 quotaMin == null && quotaMax == null ? null : new Quota(quotaMin, quotaMax),
                 new Price(price));
-        // Rehydration is not a creation: drop the ArticleCreated event raised by the constructor.
+        if (hasCourse()) {
+            article.modify().describe(new CourseDetails(objectives, level, prerequisites, whatToBring, cancellationHours)).done();
+        }
+        // Rehydration is not a creation nor a modification: drop the events raised meanwhile.
         article.domainEvents();
         return article;
     }
@@ -131,7 +148,18 @@ class PanacheArticleEntity extends PanacheEntity {
         this.profile.addAll(fromTags(state.profile()));
         this.grants.clear();
         this.grants.addAll(fromTags(state.grants()));
+        var course = state.course();
+        this.level = course == null ? null : course.level();
+        this.prerequisites = course == null ? null : course.prerequisites();
+        this.whatToBring = course == null ? null : course.whatToBring();
+        this.cancellationHours = course == null ? null : course.cancellationHours();
+        this.objectives.clear();
+        if (course != null) this.objectives.addAll(course.objectives());
         return this;
+    }
+
+    private boolean hasCourse() {
+        return level != null || prerequisites != null || whatToBring != null || cancellationHours != null || !objectives.isEmpty();
     }
 
     private static Set<Tag> toTags(Set<String> tags) {

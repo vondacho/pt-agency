@@ -92,4 +92,21 @@ class PanacheArticleRepositoryAdapterTest {
     void unknown_article_should_not_be_found(UniAsserter asserter) {
         asserter.assertThat(() -> repository.findOne(ArticleId.create()), found -> assertThat(found).isNull());
     }
+
+    @RunOnVertxContext
+    @Test
+    void course_details_should_be_kept_with_the_objectives_in_order(UniAsserter asserter) {
+        var article = article("Spinning " + System.nanoTime(), Set.of(Tag.Default.SESSION.toTag(), Tag.Default.COURSE.toTag()), Set.of(), null);
+        var course = new ch.obya.pta.shopping.domain.vo.CourseDetails(
+                List.of("Warm up", "Intervals", "Cool down"), "All levels", "From 14 years", "Water", 12);
+        article.modify().describe(course).done();
+
+        asserter.assertThat(
+                () -> repository.save(article).flatMap(repository::findOne),
+                found -> {
+                    assertThat(found.state().course()).isEqualTo(course);
+                    assertThat(found.state().course().objectives()).containsExactly("Warm up", "Intervals", "Cool down");
+                    assertThat(found.domainEvents()).isEmpty();
+                });
+    }
 }

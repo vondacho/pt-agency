@@ -13,7 +13,8 @@ import lombok.experimental.Accessors;
 public enum ArticleProblem implements Problem {
 
     NoCustomer("Article %s does not exist."),
-    AlreadyExisting("Article (%s) already exists in the period (%s,%s).");
+    AlreadyExisting("Article (%s) already exists in the period (%s,%s)."),
+    CancellationHoursInvalid("Cancellation hours (%s) must not be negative.");
 
     private final String text;
 }

@@ -9,6 +9,7 @@ import ch.obya.pta.common.domain.vo.Validity;
 import ch.obya.pta.shopping.domain.event.ArticleCreated;
 import ch.obya.pta.shopping.domain.event.ArticleModified;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
+import ch.obya.pta.shopping.domain.vo.CourseDetails;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
 import lombok.AccessLevel;
@@ -34,7 +35,9 @@ public class Article extends BaseEntity<Article, ArticleId, Article.State> {
             Price price,
             Set<Tag> profile,
             Set<Tag> grants,
-            Quota quota) {
+            Quota quota,
+            /* what a course (session article) is about; absent for other articles */
+            CourseDetails course) {
 
         public State {
             ifNullThrow(name, CommonProblem.AttributeNotNull.toException("Article.name"));
@@ -45,7 +48,7 @@ public class Article extends BaseEntity<Article, ArticleId, Article.State> {
     }
 
     public Article(ArticleId id, Name name, Text description, Validity validity, Set<Tag> profile, Set<Tag> grants, Quota quota, Price price) {
-        super(id, new State(name, description, validity, price, profile, grants, quota));
+        super(id, new State(name, description, validity, price, profile, grants, quota, null));
         andEvent(new ArticleCreated(id));
     }
 
@@ -100,6 +103,12 @@ public class Article extends BaseEntity<Article, ArticleId, Article.State> {
 
         public Modifier reallocate(Quota quota) {
             if (quota != null) stateBuilder.quota(quota);
+            return this;
+        }
+
+        /** Describes the course: objectives, level, prerequisites, what to bring, cancellation deadline. */
+        public Modifier describe(CourseDetails course) {
+            stateBuilder.course(course);
             return this;
         }
 

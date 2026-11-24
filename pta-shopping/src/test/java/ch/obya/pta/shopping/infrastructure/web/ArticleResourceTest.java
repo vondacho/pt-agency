@@ -8,6 +8,7 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
@@ -117,5 +118,16 @@ class ArticleResourceTest {
                 .when().get()
                 .then().statusCode(200)
                 .body("id.id", containsInAnyOrder("50000000-0000-0000-0000-000000000004"));
+    }
+
+    @Test
+    void a_course_tells_its_objectives_and_conditions() {
+        given().when().get("/{id}", "10000000-0000-0000-0000-000000000003")
+                .then().statusCode(200)
+                .body("name.content", equalTo("Bootcamp"),
+                        "course.level", equalTo("All levels"),
+                        "course.cancellationHours", equalTo(12),
+                        "course.objectives", contains("Outdoor circuits combining cardio and strength", "Team spirit and motivation in a group"),
+                        "course.whatToBring", equalTo("Clothes for the weather, running shoes, water and a mat."));
     }
 }

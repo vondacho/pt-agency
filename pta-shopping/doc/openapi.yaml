@@ -27,11 +27,29 @@ components:
             $ref: "#/components/schemas/Tag"
         quota:
           $ref: "#/components/schemas/Quota"
+        course:
+          $ref: "#/components/schemas/CourseDetails"
     ArticleId:
       type: object
       properties:
         id:
           $ref: "#/components/schemas/UUID"
+    CourseDetails:
+      type: object
+      properties:
+        objectives:
+          type: array
+          items:
+            type: string
+        level:
+          type: string
+        prerequisites:
+          type: string
+        whatToBring:
+          type: string
+        cancellationHours:
+          type: integer
+          format: int32
     HttpProblem:
       description: HTTP Problem Response according to RFC9457 and RFC7807
       additionalProperties: true

@@ -8,6 +8,7 @@ import ch.obya.pta.common.domain.vo.Text;
 import ch.obya.pta.common.domain.vo.Validity;
 import ch.obya.pta.shopping.domain.aggregate.Article;
 import ch.obya.pta.shopping.domain.vo.ArticleId;
+import ch.obya.pta.shopping.domain.vo.CourseDetails;
 import ch.obya.pta.shopping.domain.vo.Price;
 import ch.obya.pta.shopping.domain.vo.Tag;
 
@@ -20,7 +21,8 @@ public record ArticleDto(
         Price price,
         Set<Tag> profile,
         Set<Tag> grants,
-        Quota quota
+        Quota quota,
+        CourseDetails course
 ) {
     public static ArticleDto from(Article article) {
         var state = article.state();
@@ -33,6 +35,7 @@ public record ArticleDto(
                 .profile(state.profile())
                 .grants(state.grants())
                 .quota(state.quota())
+                .course(state.course())
                 .build();
     }
 }

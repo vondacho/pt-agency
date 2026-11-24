@@ -97,7 +97,8 @@ public class ArticleResource {
                 input.profile(),
                 input.grants(),
                 input.quota(),
-                input.price());
+                input.price(),
+                input.course());
     }
 
     @ResponseStatus(204)
@@ -110,7 +111,8 @@ public class ArticleResource {
                 .openOn(input.validity().from())
                 .closeOn(input.validity().to())
                 .reallocate(input.quota())
-                .tag(input.profile(), input.grants()));
+                .tag(input.profile(), input.grants())
+                .describe(input.course()));
     }
 
     @ResponseStatus(204)

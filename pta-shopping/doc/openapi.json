@@ -36,6 +36,9 @@
           },
           "quota" : {
             "$ref" : "#/components/schemas/Quota"
+          },
+          "course" : {
+            "$ref" : "#/components/schemas/CourseDetails"
           }
         }
       },
@@ -44,6 +47,30 @@
         "properties" : {
           "id" : {
             "$ref" : "#/components/schemas/UUID"
+          }
+        }
+      },
+      "CourseDetails" : {
+        "type" : "object",
+        "properties" : {
+          "objectives" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "level" : {
+            "type" : "string"
+          },
+          "prerequisites" : {
+            "type" : "string"
+          },
+          "whatToBring" : {
+            "type" : "string"
+          },
+          "cancellationHours" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },

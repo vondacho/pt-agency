@@ -41,3 +41,35 @@ VALUES
     (-8, 'SESSION'), (-8, 'COURSE'),
     (-9, 'SESSION'), (-9, 'COURSE'),
     (-10, 'SESSION'), (-10, 'COURSE');
+
+-- Course details of the session articles
+UPDATE article SET level = 'All levels', cancellationHours = 24,
+    prerequisites = 'From 16 years. Tell your coach about any injury or health condition.',
+    whatToBring = 'Sports clothes and indoor shoes, a towel, water.'
+WHERE id = -1;
+UPDATE article SET level = 'Intermediate', cancellationHours = 12,
+    prerequisites = 'From 16 years. Regular physical activity recommended: high-intensity intervals.',
+    whatToBring = 'Indoor shoes, a towel, water.'
+WHERE id = -2;
+UPDATE article SET level = 'All levels', cancellationHours = 12,
+    prerequisites = 'From 14 years. Held outdoors in any weather, except storms.',
+    whatToBring = 'Clothes for the weather, running shoes, water and a mat.'
+WHERE id = -3;
+UPDATE article SET level = 'All levels', cancellationHours = 6,
+    prerequisites = 'No prerequisite: suitable for beginners and recovery.',
+    whatToBring = 'Comfortable clothes. Mats are provided.'
+WHERE id = -4;
+
+INSERT INTO article_objective (article_id, position, text)
+VALUES
+    (-1, 0, 'A programme built on your goals and your level'),
+    (-1, 1, 'Technique and posture corrected one to one'),
+    (-1, 2, 'Progress measured from session to session'),
+    (-2, 0, 'Raise your cardio capacity with short intense intervals'),
+    (-2, 1, 'Full-body strength with body weight and kettlebells'),
+    (-2, 2, 'Burn energy efficiently in under an hour'),
+    (-3, 0, 'Outdoor circuits combining cardio and strength'),
+    (-3, 1, 'Team spirit and motivation in a group'),
+    (-4, 0, 'Gain range of motion in hips, shoulders and spine'),
+    (-4, 1, 'Recover better between intense sessions'),
+    (-4, 2, 'Breathing and relaxation techniques');
